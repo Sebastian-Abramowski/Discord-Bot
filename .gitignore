@@ -1,0 +1,5 @@
+token.txt
+bot.cpython-310.pyc
+responses.cpython-310.pyc
+__pycache__
+.pytest_cache
