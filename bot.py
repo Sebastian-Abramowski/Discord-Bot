@@ -1,11 +1,15 @@
 import discord
 from discord.ext import commands
-from discord import app_commands
+import yt_dlp as youtube_dl
 import responses
 import dotenv
 import os
 
 dotenv.load_dotenv()
+FFMPEG_OPTIONS = {
+    'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
+    'options': '-vn'
+}
 
 
 async def send_message(message, user_message):
@@ -64,11 +68,27 @@ def run_discord_bot():
         response = responses.handle_response("getInt")
         await interaction.response.send_message(response)
 
-    @bot.tree.command(name="play")
-    @app_commands.describe(arg="the link to the song")
-    async def play(interaction: discord.Interaction, arg: str):
-        msg = (f"{interaction.user.name} wants "
-               f"to play {arg}")
-        await interaction.response.send_message(msg)
+    @bot.tree.command(name="play", description="play some sound in a channel")
+    @discord.app_commands.describe(url="the link to the song")
+    async def play(interaction: discord.Interaction, url: str):
+        guild = interaction.guild
+        # VoiceClient associated with the specified guild (there is one bot per server)
+        voice = discord.utils.get(bot.voice_clients, guild=guild)
+
+        if voice.is_playing():
+            await interaction.response.send_message("Sth is already playing")
+            return
+        else:
+            await interaction.response.send_message("Here will be url info")
+
+            # Use youtube-dl to extract the direct audio URL
+            ydl_opts = {'format': 'bestaudio/best', 'postprocessors': [{'key': 'FFmpegExtractAudio',
+                                                                        'preferredcodec': 'mp3'}]}
+            with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(url, download=False)
+                url = info['url']  # url to audio
+
+            source = await discord.FFmpegOpusAudio.from_probe(url, **FFMPEG_OPTIONS)
+            voice.play(source)
 
     bot.run(os.getenv('TOKEN'))
