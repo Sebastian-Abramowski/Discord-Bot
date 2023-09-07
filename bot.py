@@ -20,7 +20,7 @@ def run_discord_bot():
     with open("token.txt", 'r') as file_handle:
         token = file_handle.read()
 
-    bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
+    bot = commands.Bot(command_prefix=".", intents=discord.Intents.all())
 
     @bot.event
     async def on_ready():
@@ -31,6 +31,20 @@ def run_discord_bot():
             print(f"Synced {len(synced)} command(s)")
         except Exception as e:
             print(e)
+
+    @bot.tree.command(name="join", description="join voice channel")
+    async def join(interaction: discord.Interaction):
+        if interaction.user.voice:
+            channel = interaction.user.voice.channel
+            voice = interaction.guild.voice_client
+
+            if voice and voice.is_connected():
+                await voice.move_to(channel)
+            else:
+                voice = await channel.connect()
+        else:
+            await interaction.response.send_message("You are not in a voice channel.")
+        await interaction.response.send_message("Joined or moved to the voice channel.")
 
     @bot.tree.command(name="hello", description="Get greeted")
     async def hello(interaction: discord.Interaction):
@@ -45,7 +59,7 @@ def run_discord_bot():
     @bot.tree.command(name="play")
     @app_commands.describe(arg="the link to the song")
     async def play(interaction: discord.Interaction, arg: str):
-        msg = (f"{interaction.user.name} wants"
+        msg = (f"{interaction.user.name} wants "
                f"to play {arg}")
         await interaction.response.send_message(msg)
 
