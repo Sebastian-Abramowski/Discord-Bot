@@ -1,7 +1,11 @@
-token.txt
+*.env
 bot.cpython-310.pyc
 responses.cpython-310.pyc
 __pycache__
 .pytest_cache
 test.py
 test2.py
+test3.py
+test4.py
+tempCodeRunnerFile.py
+utilities.py
