@@ -9,6 +9,7 @@ FFMPEG_OPTIONS = {
 }
 
 
+# commands.Bot is subclass of discord.Client
 class DonkeyBot(commands.Bot):
     def __init__(self):
         super().__init__(command_prefix=".", intents=discord.Intents.all())
@@ -39,6 +40,21 @@ class DonkeyBot(commands.Bot):
                     await message.reply("I invoke my right not to answer this question")
                 else:
                     await message.reply("Who asked?")
+
+    async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState,
+                                    after: discord.VoiceState):
+        if self.voice_clients:
+            bots_voice_client = discord.utils.get(self.voice_clients, guild=member.guild)
+            if after.channel is None:
+                if before.channel == bots_voice_client.channel:
+                    num_of_members = len(bots_voice_client.channel.members)
+                    if num_of_members == 1:
+                        print("[BOT] The bot left the empty channel")
+                        await bots_voice_client.disconnect()
+            elif after.channel == bots_voice_client.channel:
+                if len(after.channel.members) == 1:
+                    print("[BOT] The bot left because it was moved to an empty channel")
+                    await bots_voice_client.disconnect()
 
 
 bot = DonkeyBot()
