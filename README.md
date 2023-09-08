@@ -1,6 +1,6 @@
 # DonkeyBot
 
-![donkey image](icon.png){:width="75%" style="border-radius: 50%;"}
+<img src="icon.png" alt="donkey image" width="35%">
 
 ## Requirements
 
