@@ -1,5 +1,7 @@
 # DonkeyBot
 
+<img src="icon.png" alt="donkey image" style="width: 75%; border-radius: 50%;">
+
 ## Requirements
 
 Installation of used python modules:
