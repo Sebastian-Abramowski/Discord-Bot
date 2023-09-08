@@ -4,12 +4,14 @@ import yt_dlp as youtube_dl
 import responses
 import dotenv
 import os
+import asyncio
 
 dotenv.load_dotenv()
 FFMPEG_OPTIONS = {
     'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
     'options': '-vn'
 }
+loop = False
 
 
 async def send_message(message, user_message):
@@ -111,6 +113,50 @@ def run_discord_bot():
         else:
             await interaction.response.send_message(
                 "`The bot is not conencted to any channel`")
+
+    @bot.tree.command(name="loop", description="loop the audio")
+    @discord.app_commands.describe(url="the link to the song")
+    async def loop(interaction: discord.Interaction, url: str):
+        global loop
+        loop = True
+
+        guild = interaction.guild
+        # VoiceClient associated with the specified guild (there is one bot per server)
+        voice = discord.utils.get(bot.voice_clients, guild=guild)
+
+        if voice and voice.is_connected():
+            if voice.is_playing():
+                await interaction.response.send_message("Sth is already playing")
+                return
+            else:
+                await interaction.response.send_message("Here will be url info")
+
+                # Use youtube-dl to extract the direct audio URL
+                ydl_opts = {'format': 'bestaudio/best',
+                            'postprocessors': [{'key': 'FFmpegExtractAudio',
+                                                'preferredcodec': 'mp3'}]}
+                duration_sec = 0
+                with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+                    info = ydl.extract_info(url, download=False)
+                    url = info['url']  # url to audio, there the audio data is in Opus format
+                    # Opus format - way of compressing and encoding the audio data
+                    duration_sec = info.get("duration", 0)
+
+                while loop:
+                    source = await discord.FFmpegOpusAudio.from_probe(url, **FFMPEG_OPTIONS)
+                    voice.play(source)
+                    await asyncio.sleep(duration_sec + 1)
+                    voice.stop()
+        else:
+            await interaction.response.send_message(
+                "`The bot is not conencted to any channel`")
+
+    @bot.tree.command(name='end_loop')
+    async def end_loop(interaction: discord.Interaction):
+        global loop
+        loop = False
+
+        await interaction.response.send_message("Looping has been stopped")
 
     @bot.tree.command(name='pause', description='pause the bot audio')
     async def pause(interaction: discord.Interaction):
