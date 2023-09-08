@@ -1,6 +1,6 @@
 # DonkeyBot
 
-<img src="icon.png" alt="donkey image" width="35%">
+<img src="icon.png" alt="donkey image" width="37%">
 
 ## Requirements
 
