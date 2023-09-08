@@ -1,6 +1,8 @@
 # Discord-Bot
 
-Python module used:
+## Requirements
+
+Installation of used python modules:
 
 ```bash
 pip install discord
@@ -11,7 +13,7 @@ pip install yt-dlp
 ```
 
 You must have the <strong>ffmpeg</strong> executable in your path environment variable in order for this to work
-(reason: https://discordpy.readthedocs.io/en/stable/api.html?highlight=ffmpeg#ffmpegopusaudio)
+'reason: https://discordpy.readthedocs.io/en/stable/api.html?highlight=ffmpeg#ffmpegopusaudio'
 
 ## Environment Variables
 
