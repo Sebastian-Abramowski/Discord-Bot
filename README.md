@@ -12,11 +12,9 @@ pip install youtube-dl
 pip install yt-dlp
 ```
 
-## You must have the <strong>ffmpeg</strong> executable in your path environment variable in order for this to work
+You must have the <strong>ffmpeg</strong> executable in your path environment variable in order for this to work <br>
 
----
-
-`reason: https://discordpy.readthedocs.io/en/stable/api.html?highlight=ffmpeg#ffmpegopusaudio`
+reason: <br>https://discordpy.readthedocs.io/en/stable/api.html?highlight=ffmpeg#ffmpegopusaudio`
 
 ## Environment Variables
 
