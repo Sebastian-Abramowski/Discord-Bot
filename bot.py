@@ -98,13 +98,23 @@ class DonkeyBot(commands.Bot):
                 ydl_opts = {'format': 'bestaudio/best',
                             'postprocessors': [{'key': 'FFmpegExtractAudio',
                                                 'preferredcodec': 'mp3'}]}
-                with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-                    info = ydl.extract_info(url, download=False)
-                    url = info['url']  # url to audio, there the audio data is in Opus format
-                    # Opus format - way of compressing and encoding the audio data
+                try:
+                    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+                        info = ydl.extract_info(url, download=False)
+                        url = info['url']  # url to audio, there the audio data is in Opus format
+                        # Opus format - way of compressing and encoding the audio data
+                except Exception as e:
+                    print(e)
+                    await interaction.followup.send(
+                        "`Something went wrong with extracting audio URL...`")
+                    return None
 
-                source = await discord.FFmpegOpusAudio.from_probe(url, **FFMPEG_OPTIONS)
-                bots_voice.play(source)
+                try:
+                    source = await discord.FFmpegOpusAudio.from_probe(url, **FFMPEG_OPTIONS)
+                    bots_voice.play(source)
+                except Exception as e:
+                    print(e)
+                    await interaction.followup.send("`Something went wrong with playing audio...`")
         else:
             await interaction.response.send_message(
                 "`The bot is not conencted to any channel`")
@@ -132,19 +142,31 @@ class DonkeyBot(commands.Bot):
                             'postprocessors': [{'key': 'FFmpegExtractAudio',
                                                 'preferredcodec': 'mp3'}]}
                 duration_sec = 0
-                with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-                    info = ydl.extract_info(url, download=False)
-                    url = info['url']  # url to audio, there the audio data is in Opus format
-                    # Opus format - way of compressing and encoding the audio data
-                    duration_sec = info.get("duration", 0)
+                try:
+                    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+                        info = ydl.extract_info(url, download=False)
+                        url = info['url']  # url to audio, there the audio data is in Opus format
+                        # Opus format - way of compressing and encoding the audio data
+                        duration_sec = info.get("duration", 0)
+                except Exception as e:
+                    print(e)
+                    await interaction.followup.send(
+                        "`Something went wrong with extracting audio URL...`")
+                    return None
 
                 while self.if_looped:
                     # Turn off looping when the duration was read not correctly
                     if duration_sec == 0:
                         self.if_looped = False
 
-                    source = await discord.FFmpegOpusAudio.from_probe(url, **FFMPEG_OPTIONS)
-                    bots_voice.play(source)
+                    try:
+                        source = await discord.FFmpegOpusAudio.from_probe(url, **FFMPEG_OPTIONS)
+                        bots_voice.play(source)
+                    except Exception as e:
+                        print(e)
+                        await interaction.followup.send(
+                            "`Something went wrong with playing audio...`")
+
                     await asyncio.sleep(duration_sec + 1)
                     # If voice (VoiceClient) was stopped during asyncio.sleep, another voice.stop(),
                     # even thoough the voice has been already stopped, won't do anything
