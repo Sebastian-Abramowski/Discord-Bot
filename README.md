@@ -18,4 +18,4 @@ You must have the <strong>ffmpeg</strong> executable in your path environment va
 
 To run this project, you will need to add the following environment variables to your .env file
 
-`TOKEN`
+`TOKEN` - discord bot token
