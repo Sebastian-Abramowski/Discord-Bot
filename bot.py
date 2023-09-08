@@ -70,7 +70,8 @@ def run_discord_bot():
                 await interaction.response.send_message(
                     "`The bot has joined your channel`")
         else:
-            await interaction.response.send_message("`You are not in a voice channel.`")
+            await interaction.response.send_message(
+                "`You are not in a voice channel.`")
 
     @bot.tree.command(name="hello", description="Get greeted")
     async def hello(interaction: discord.Interaction):
@@ -97,8 +98,9 @@ def run_discord_bot():
                 await interaction.response.send_message("Here will be url info")
 
                 # Use youtube-dl to extract the direct audio URL
-                ydl_opts = {'format': 'bestaudio/best', 'postprocessors': [{'key': 'FFmpegExtractAudio',
-                                                                            'preferredcodec': 'mp3'}]}
+                ydl_opts = {'format': 'bestaudio/best',
+                            'postprocessors': [{'key': 'FFmpegExtractAudio',
+                                                'preferredcodec': 'mp3'}]}
                 with youtube_dl.YoutubeDL(ydl_opts) as ydl:
                     info = ydl.extract_info(url, download=False)
                     url = info['url']  # url to audio, there the audio data is in Opus format
@@ -117,9 +119,11 @@ def run_discord_bot():
         if voice and voice.is_connected():
             if voice.is_playing():
                 voice.pause()
-                await interaction.response.send_message("`The bot has been paused`")
+                await interaction.response.send_message(
+                    "`The bot has been paused`")
             else:
-                await interaction.response.send_message("`The bot is currently not playing`")
+                await interaction.response.send_message(
+                    "`The bot is currently not playing`")
         else:
             await interaction.response.send_message(
                 "`The bot is not conencted to any channel`")
@@ -131,12 +135,15 @@ def run_discord_bot():
         if voice and voice.is_connected():
             if voice.is_paused():
                 voice.resume()
-                await interaction.response.send_message("`The bot has been resumed`")
+                await interaction.response.send_message(
+                    "`The bot has been resumed`")
             else:
                 if voice.is_playing():
-                    await interaction.response.send_message("`The bot is currently playing something`")
+                    await interaction.response.send_message(
+                        "`The bot is currently playing something`")
                 else:
-                    await interaction.response.send_message("`The bot is currently not paused`")
+                    await interaction.response.send_message(
+                        "`The bot is currently not paused`")
         else:
             await interaction.response.send_message(
                 "`The bot is not conencted to any channel`")
