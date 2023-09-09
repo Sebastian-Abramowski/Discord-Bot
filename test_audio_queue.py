@@ -44,15 +44,15 @@ def test_pop():
     queue.push("sth4")
     queue.push_with_priority("sth0")
 
-    queue.pop()
+    assert queue.pop() == "sth0"
     assert queue.queue == ["sth1", "sth2", "sth3", "sth4"]
-    queue.pop()
+    assert queue.pop() == "sth1"
     assert queue.queue == ["sth2", "sth3", "sth4"]
-    queue.pop()
+    assert queue.pop() == "sth2"
     assert queue.queue == ["sth3", "sth4"]
     assert queue.pop() == "sth3"
     assert queue.queue == ["sth4"]
-    queue.pop()
+    assert queue.pop() == "sth4"
     assert queue.queue == []
     queue.pop()
     assert queue.queue == []
@@ -66,3 +66,18 @@ def test_get_first_one_to_leave():
     queue.push("sth4")
 
     assert queue.get_first_one_to_leave() == "sth1"
+
+
+def test_push_and_pop():
+    queue = AudioQueue()
+    queue.push("link1")
+    queue.push("link1")
+    queue.push("link1")
+    queue.push("link1")
+    queue.push("link2")
+
+    assert queue.pop() == "link1"
+    assert queue.pop() == "link1"
+    assert queue.pop() == "link1"
+    assert queue.pop() == "link1"
+    assert queue.pop() == "link2"

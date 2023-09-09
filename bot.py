@@ -58,26 +58,30 @@ class DonkeyBot(commands.Bot):
                     await bots_voice.disconnect()
                     self.reset_attributes()
 
-    async def join(self, interaction: discord.Interaction) -> None:
+    async def join(self, interaction: discord.Interaction, without_response=False) -> None:
         if interaction.user.voice:
             channel = interaction.user.voice.channel
             bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
 
             if bots_voice and bots_voice.is_connected():
                 if bots_voice.channel == channel:
-                    await interaction.response.send_message(
-                        "`The bot is already on your channel`")
+                    if not without_response:
+                        await interaction.response.send_message(
+                            "`The bot is already on your channel`")
                 else:
                     await bots_voice.move_to(channel)
-                    await interaction.response.send_message(
-                        "`The bot has been moved to your channel`")
+                    if not without_response:
+                        await interaction.response.send_message(
+                            "`The bot has been moved to your channel`")
             else:
                 bots_voice = await channel.connect()
-                await interaction.response.send_message(
-                    "`The bot has joined your channel`")
+                if not without_response:
+                    await interaction.response.send_message(
+                        "`The bot has joined your channel`")
         else:
-            await interaction.response.send_message(
-                "`You are not in a voice channel.`")
+            if not without_response:
+                await interaction.response.send_message(
+                    "`You are not in a voice channel.`")
 
     async def play(self, interaction: discord.Interaction, url: Union[str, None],
                    if_next_in_queue=False, if_previous_was_skipped=False) -> None:
@@ -94,6 +98,22 @@ class DonkeyBot(commands.Bot):
         guild = interaction.guild
         # VoiceClient associated with the specified guild (there is one bot per server)
         bots_voice = discord.utils.get(self.voice_clients, guild=guild)
+
+        if validations.is_url_valid(url) and bots_voice and bots_voice.is_paused():
+            self.url_queue.push(url)
+            bots_voice.resume()
+            await interaction.response.send_message(
+                "`Prioviosly paused bot was resumed and the passed url was added to the queue`")
+            return None
+
+        if not bots_voice:
+            await self.join(interaction, without_response=True)
+            bots_voice = discord.utils.get(self.voice_clients, guild=guild)
+
+            # if there is still no voice connection that means that the user is in no channel
+            if not bots_voice:
+                await interaction.response.send_message("The user is not connected to any channel")
+                return None
 
         if not if_previous_was_skipped and not validations.is_url_valid(url):
             if if_next_in_queue:
@@ -113,6 +133,7 @@ class DonkeyBot(commands.Bot):
             return None
         else:
             if not if_previous_was_skipped:
+                #TODO: NAPRAW BŁĄD W KOLEJCE
                 self.url_queue.push(url)
             if bots_voice.is_playing() or self.is_preparing_to_play:
                 if if_next_in_queue:
@@ -160,7 +181,10 @@ class DonkeyBot(commands.Bot):
                     self.is_preparing_to_play = False
 
                     if duration_sec > 0:
-                        await asyncio.sleep(duration_sec + 1)
+                        while bots_voice.is_playing() or bots_voice.is_paused():
+                            await asyncio.sleep(1)
+
+                        # await asyncio.sleep(duration_sec + 1)
                         if self.url_queue.queue and not self.if_queue_was_stopped:
                             bots_voice.stop()
 
@@ -174,7 +198,7 @@ class DonkeyBot(commands.Bot):
                 except Exception as e:
                     print(e)
                     await interaction.followup.send("`Something went wrong with playing audio...`")
-                    self.is_preparing_to_play = True
+                    self.is_preparing_to_play = False
         else:
             if if_next_in_queue:
                 await interaction.followup.send(
@@ -186,7 +210,12 @@ class DonkeyBot(commands.Bot):
     async def skip(self, interaction: discord.Interaction) -> None:
         await self.stop(interaction, without_response=True)
         self.reset_attributes_without_queue()
-        await self.play(interaction, None, if_previous_was_skipped=True)
+
+        if self.url_queue.queue:
+            await self.play(interaction, None, if_previous_was_skipped=True)
+        else:
+            await interaction.response.send_message(
+                "`Skip command was executed, but the audio queue is empty`")
 
     async def loop_audio(self, interaction: discord.Interaction, url: str) -> None:
         self.if_looped = True
@@ -215,13 +244,11 @@ class DonkeyBot(commands.Bot):
                 ydl_opts = {'format': 'bestaudio/best',
                             'postprocessors': [{'key': 'FFmpegExtractAudio',
                                                 'preferredcodec': 'mp3'}]}
-                duration_sec = 0
                 try:
                     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
                         info = ydl.extract_info(url, download=False)
                         url = info['url']  # url to audio, there the audio data is in Opus format
                         # Opus format - way of compressing and encoding the audio data
-                        duration_sec = info.get("duration", 0)
                 except Exception as e:
                     print(e)
                     await interaction.followup.send(
@@ -229,10 +256,6 @@ class DonkeyBot(commands.Bot):
                     return None
 
                 while self.if_looped:
-                    # Turn off looping when the duration was read not correctly
-                    if duration_sec == 0:
-                        self.if_looped = False
-
                     try:
                         source = await discord.FFmpegOpusAudio.from_probe(url, **FFMPEG_OPTIONS)
                         bots_voice.play(source)
@@ -241,7 +264,9 @@ class DonkeyBot(commands.Bot):
                         await interaction.followup.send(
                             "`Something went wrong with playing audio...`")
 
-                    await asyncio.sleep(duration_sec + 1)
+                    while bots_voice.is_playing():
+                        await asyncio.sleep(1)
+
                     # If voice (VoiceClient) was stopped during asyncio.sleep, another voice.stop(),
                     # even thoough the voice has been already stopped, won't do anything
                     bots_voice.stop()
