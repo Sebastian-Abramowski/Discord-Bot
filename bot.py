@@ -50,15 +50,10 @@ class DonkeyBot(commands.Bot):
                                     after: discord.VoiceState) -> None:
         if self.voice_clients:
             bots_voice = discord.utils.get(self.voice_clients, guild=member.guild)
-            if after.channel is None:
-                if before.channel == bots_voice.channel:
-                    num_of_members = len(bots_voice.channel.members)
-                    if num_of_members == 1:
-                        print("[BOT] The bot left the empty channel")
-                        await bots_voice.disconnect()
-            elif after.channel == bots_voice.channel:
-                if member.bot and len(after.channel.members) == 1:
-                    print("[BOT] The bot left because it was moved to an empty channel")
+            if before.channel == bots_voice.channel or after.channel == bots_voice.channel:
+                num_of_members = len(bots_voice.channel.members)
+                if num_of_members == 1:
+                    print("[BOT] The bot left the empty channel")
                     await bots_voice.disconnect()
 
     async def join(self, interaction: discord.Interaction) -> None:
@@ -300,6 +295,10 @@ class DonkeyBot(commands.Bot):
         else:
             await interaction.response.send_message("`You try to shuffle the empty queue`")
 
+    async def put_on_top_of_queue(self, interaction: discord.Interaction, url: str) -> None:
+        self.url_queue.push_with_priority(url)
+        await interaction.response.send_message("`Item was put on the top of the audio queue`")
+
 
 bot = DonkeyBot()
 
@@ -360,3 +359,9 @@ async def clear_queue_command(interaction: discord.Interaction):
 @bot.tree.command(name="shuffle_queue", description="Shuffle the audio queue")
 async def shuffle_queue_command(interaction: discord.Interaction):
     await bot.shuffle_queue(interaction)
+
+
+@bot.tree.command(name="put_on_top_of_queue", description="Put item on the top of the audio queue")
+@discord.app_commands.describe(url="the link to the audio/video")
+async def put_on_top_of_queue_command(interaction: discord.Interaction, url: str):
+    await bot.put_on_top_of_queue(interaction, url)
