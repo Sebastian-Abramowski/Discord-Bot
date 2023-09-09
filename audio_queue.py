@@ -26,9 +26,9 @@ class AudioQueue():
     def push_with_priority(self, url: str) -> None:
         self.queue.insert(0, url)
 
-    def pop(self) -> None:
+    def pop(self) -> str:
         if self.queue:
-            self.queue.pop(0)
+            return self.queue.pop(0)
 
     def get_first_one_to_leave(self) -> Union[str, None]:
         if self.queue:

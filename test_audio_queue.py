@@ -50,7 +50,7 @@ def test_pop():
     assert queue.queue == ["sth2", "sth3", "sth4"]
     queue.pop()
     assert queue.queue == ["sth3", "sth4"]
-    queue.pop()
+    assert queue.pop() == "sth3"
     assert queue.queue == ["sth4"]
     queue.pop()
     assert queue.queue == []
