@@ -86,7 +86,20 @@ class DonkeyBot(commands.Bot):
         bots_voice = discord.utils.get(self.voice_clients, guild=guild)
 
         if not is_url_valid(url):
-            await interaction.followup.send(f"`You passed invalid url. Passed url: {url}`")
+            if if_next_in_queue:
+                await interaction.followup.send(
+                    f"`You passed invalid url. Passed url: {url}`")
+            else:
+                await interaction.response.send_message(
+                    f"`You passed invalid url. Passed url: {url}`")
+            return None
+        elif "youtube" in url and "list=" in url:
+            if if_next_in_queue:
+                await interaction.followup.send(
+                    "`Passed url leads to youtube playlist. We advise to use single videos`")
+            else:
+                await interaction.response.send_message(
+                    "`Passed url leads to youtube playlist. We advise to use single videos`")
             return None
         else:
             self.url_queue.push(url)
@@ -96,10 +109,10 @@ class DonkeyBot(commands.Bot):
                 else:
                     await interaction.response.send_message("`Audio queue was updated`")
                 return None
-            self.is_preparing_to_play = True
             url = self.url_queue.pop()
 
         if bots_voice and bots_voice.is_connected():
+            self.is_preparing_to_play = True
             if bots_voice.is_playing():
                 if if_next_in_queue:
                     await interaction.followup.send("`Something is already being played`")
@@ -127,6 +140,7 @@ class DonkeyBot(commands.Bot):
                     print(e)
                     await interaction.followup.send(
                         "`Something went wrong with extracting audio URL...`")
+                    self.is_preparing_to_play = False
                     return None
 
                 try:
@@ -149,6 +163,7 @@ class DonkeyBot(commands.Bot):
                 except Exception as e:
                     print(e)
                     await interaction.followup.send("`Something went wrong with playing audio...`")
+                    self.is_preparing_to_play = True
         else:
             if if_next_in_queue:
                 await interaction.followup.send(
@@ -159,6 +174,11 @@ class DonkeyBot(commands.Bot):
 
     async def loop_audio(self, interaction: discord.Interaction, url: str) -> None:
         self.if_looped = True
+
+        if "youtube" in url and "list=" in url:
+            await interaction.response.send_message(
+                "`Passed url leads to youtube playlist. We advise to use single videos`")
+            return None
 
         guild = interaction.guild
         # VoiceClient associated with the specified guild (there is one bot per server)
