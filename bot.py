@@ -2,8 +2,9 @@ import discord
 from discord.ext import commands
 import yt_dlp as youtube_dl
 import asyncio
+import validations
 from audio_queue import AudioQueue
-from other import is_url_valid
+from typing import Union
 
 FFMPEG_OPTIONS = {
     "before_options": "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5",
@@ -55,6 +56,7 @@ class DonkeyBot(commands.Bot):
                 if num_of_members == 1:
                     print("[BOT] The bot left the empty channel")
                     await bots_voice.disconnect()
+                    self.reset_attributes()
 
     async def join(self, interaction: discord.Interaction) -> None:
         if interaction.user.voice:
@@ -77,15 +79,23 @@ class DonkeyBot(commands.Bot):
             await interaction.response.send_message(
                 "`You are not in a voice channel.`")
 
-    async def play(self, interaction: discord.Interaction, url: str,
-                   if_next_in_queue=False) -> None:
+    async def play(self, interaction: discord.Interaction, url: Union[str, None],
+                   if_next_in_queue=False, if_previous_was_skipped=False) -> None:
+        if not validations.is_play_func_valid(url, if_previous_was_skipped):
+            wrong_use_info = ("If you have if_previous_was_skipped flag set to True, "
+                              "you shouldn't pass any url, url should be set to None")
+            print("[INFO] " + wrong_use_info)
+            await interaction.response.send_message(
+                "The audio wasn't played due to wrong function arguemnts")
+            return None
+
         self.if_queue_was_stopped = False
 
         guild = interaction.guild
         # VoiceClient associated with the specified guild (there is one bot per server)
         bots_voice = discord.utils.get(self.voice_clients, guild=guild)
 
-        if not is_url_valid(url):
+        if not if_previous_was_skipped and not validations.is_url_valid(url):
             if if_next_in_queue:
                 await interaction.followup.send(
                     f"`You passed invalid url. Passed url: {url}`")
@@ -93,7 +103,7 @@ class DonkeyBot(commands.Bot):
                 await interaction.response.send_message(
                     f"`You passed invalid url. Passed url: {url}`")
             return None
-        elif "youtube" in url and "list=" in url:
+        elif not if_previous_was_skipped and "youtube" in url and "list=" in url:
             if if_next_in_queue:
                 await interaction.followup.send(
                     "`Passed url leads to youtube playlist. We advise to use single videos`")
@@ -102,7 +112,8 @@ class DonkeyBot(commands.Bot):
                     "`Passed url leads to youtube playlist. We advise to use single videos`")
             return None
         else:
-            self.url_queue.push(url)
+            if not if_previous_was_skipped:
+                self.url_queue.push(url)
             if bots_voice.is_playing() or self.is_preparing_to_play:
                 if if_next_in_queue:
                     await interaction.followup.send("`Audio queue was updated`")
@@ -172,6 +183,11 @@ class DonkeyBot(commands.Bot):
                 await interaction.response.send_message(
                     "`The bot is not conencted to any channel`")
 
+    async def skip(self, interaction: discord.Interaction) -> None:
+        await self.stop(interaction, without_response=True)
+        self.reset_attributes_without_queue()
+        await self.play(interaction, None, if_previous_was_skipped=True)
+
     async def loop_audio(self, interaction: discord.Interaction, url: str) -> None:
         self.if_looped = True
 
@@ -191,7 +207,7 @@ class DonkeyBot(commands.Bot):
             else:
                 await interaction.response.send_message(f"Currently looped: {url}")
 
-                if not is_url_valid(url):
+                if not validations.is_url_valid(url):
                     await interaction.followup.send(f"`You passed invalid url. Passed url: {url}`")
                     return None
 
@@ -271,7 +287,7 @@ class DonkeyBot(commands.Bot):
             await interaction.response.send_message(
                 "`The bot is not conencted to any channel`")
 
-    async def stop(self, interaction: discord.Interaction) -> None:
+    async def stop(self, interaction: discord.Interaction, without_response=False) -> None:
         bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
 
         if bots_voice and bots_voice.is_connected():
@@ -279,13 +295,16 @@ class DonkeyBot(commands.Bot):
                 bots_voice.stop()
                 self.if_queue_was_stopped = True
                 self.if_looped = False
-                await interaction.response.send_message("`The bot has been stopped`")
+                if not without_response:
+                    await interaction.response.send_message("`The bot has been stopped`")
             else:
-                await interaction.response.send_message(
-                    "`You cannot stop the bot which is currently not playing`")
+                if not without_response:
+                    await interaction.response.send_message(
+                        "`You cannot stop the bot which is currently not playing`")
         else:
-            await interaction.response.send_message(
-                "`The bot is not conencted to any channel`")
+            if not without_response:
+                await interaction.response.send_message(
+                    "`The bot is not conencted to any channel`")
 
     async def disconnect(self, interaction: discord.Interaction) -> None:
         bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
@@ -318,6 +337,25 @@ class DonkeyBot(commands.Bot):
     async def put_on_top_of_queue(self, interaction: discord.Interaction, url: str) -> None:
         self.url_queue.push_with_priority(url)
         await interaction.response.send_message("`Item was put on the top of the audio queue`")
+
+    def reset_attributes_without_queue(self) -> None:
+        self.if_looped = False
+        self.is_preparing_to_play = False
+        self.if_queue_was_stopped = False
+
+    def reset_attributes(self) -> None:
+        self.reset_attributes_without_queue()
+        self.url_queue = AudioQueue()
+
+    async def reset_bot(self, interaction: discord.Interaction) -> None:
+        self.reset_attributes()
+
+        bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
+        if bots_voice and bots_voice.is_connected() and bots_voice.is_playing():
+            bots_voice.stop()
+            bots_voice.disconnect()
+
+        await interaction.response.send_message("The bot was reset")
 
 
 bot = DonkeyBot()
@@ -385,3 +423,13 @@ async def shuffle_queue_command(interaction: discord.Interaction):
 @discord.app_commands.describe(url="the link to the audio/video")
 async def put_on_top_of_queue_command(interaction: discord.Interaction, url: str):
     await bot.put_on_top_of_queue(interaction, url)
+
+
+@bot.tree.command(name="reset_bot", description="Reset the bot")
+async def reset_command(interaction: discord.Interaction):
+    await bot.reset_bot(interaction)
+
+
+@bot.tree.command(name="skip", description="Skip current audio and continue with the queue")
+async def skip_command(interaction: discord.Interaction):
+    await bot.skip(interaction)
