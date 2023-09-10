@@ -132,8 +132,7 @@ class DonkeyBot(commands.Bot):
                     "`Passed url leads to youtube playlist. We advise to use single videos`")
             return None
         else:
-            if not if_previous_was_skipped:
-                #TODO: NAPRAW BŁĄD W KOLEJCE
+            if not if_previous_was_skipped and not if_next_in_queue:
                 self.url_queue.push(url)
             if bots_voice.is_playing() or self.is_preparing_to_play:
                 if if_next_in_queue:
@@ -141,7 +140,8 @@ class DonkeyBot(commands.Bot):
                 else:
                     await interaction.response.send_message("`Audio queue was updated`")
                 return None
-            url = self.url_queue.pop()
+            if not if_next_in_queue:
+                url = self.url_queue.pop()
 
         if bots_voice and bots_voice.is_connected():
             self.is_preparing_to_play = True
