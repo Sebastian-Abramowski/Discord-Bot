@@ -223,6 +223,48 @@ class DonkeyBot(commands.Bot):
             await interaction.response.send_message(
                 "`Skip command was executed, but the audio queue is empty`")
 
+    async def play_from_file(self, interaction: discord.Interaction, path_to_audio: str,
+                             message_after_playing: str) -> None:
+        if self.if_looped:
+            await interaction.response.send_message(
+                "`The audio is looped currently. Use /end_loop if you want it to stop.`")
+            return None
+
+        bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
+
+        if not bots_voice:
+            await self.join(interaction, without_response=True)
+            bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
+
+            # if there is still no voice connection that means that the user is in no channel
+            if not bots_voice:
+                await interaction.response.send_message("The user is not connected to any channel")
+                return None
+
+        if not bots_voice:
+            await interaction.response.send_message(
+                "`The bot is not connected to any channel`")
+            return None
+
+        if bots_voice:
+            if bots_voice.is_playing():
+                await interaction.response.send_message(
+                    "`The bot is currently playing something`")
+                return None
+            else:
+                try:
+                    source = discord.FFmpegOpusAudio(path_to_audio)
+                    bots_voice.play(source)
+                    await interaction.response.send_message(message_after_playing)
+                except Exception as e:
+                    print(e)
+                    await interaction.response.send_message(
+                        f"`There was a problem with plaing {path_to_audio} audio file`")
+                    return None
+
+    async def play_sui(self, interaction: discord.Interaction) -> None:
+        await self.play_from_file(interaction, "Assets/sui.mp3", "SUUUUUUI")
+
     async def loop_audio(self, interaction: discord.Interaction, url: str) -> None:
         self.if_looped = True
 
@@ -464,3 +506,8 @@ async def reset_command(interaction: discord.Interaction):
 @bot.tree.command(name="skip", description="Skip current audio and continue with the queue")
 async def skip_command(interaction: discord.Interaction):
     await bot.skip(interaction)
+
+
+@bot.tree.command(name="play_sui", description="Play sui")
+async def play_sui_command(interaction: discord.Interaction):
+    await bot.play_sui(interaction)
