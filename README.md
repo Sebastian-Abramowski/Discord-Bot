@@ -10,7 +10,6 @@ Installation of used python modules:
 pip install discord
 pip install PyNaCl # (for voice support)
 pip install python-dotenv
-pip install youtube-dl
 pip install yt-dlp
 pip install Django # (for URL validator)
 ```
