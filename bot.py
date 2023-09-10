@@ -13,13 +13,9 @@ FFMPEG_OPTIONS = {
 
 
 # commands.Bot is subclass of discord.Client
-class DonkeyBot(commands.Bot):
+class BasicBot(commands.Bot):
     def __init__(self):
         super().__init__(command_prefix='.', intents=discord.Intents.all())
-        self.if_looped = False
-        self.is_preparing_to_play = False
-        self.if_queue_was_stopped = False
-        self.url_queue = AudioQueue()
 
     async def on_ready(self) -> None:
         print(f"[BOT-INFO] {self.user} is now running")
@@ -57,6 +53,15 @@ class DonkeyBot(commands.Bot):
                     print("[BOT] The bot left the empty channel")
                     await bots_voice.disconnect()
                     self.reset_attributes()
+
+
+class MusicBot(BasicBot):
+    def __init__(self):
+        super().__init__()
+        self.if_looped = False
+        self.is_preparing_to_play = False
+        self.if_queue_was_stopped = False
+        self.url_queue = AudioQueue()
 
     async def join(self, interaction: discord.Interaction, without_response=False) -> None:
         if interaction.user.voice:
@@ -431,6 +436,32 @@ class DonkeyBot(commands.Bot):
         await interaction.response.send_message("The bot was reset")
 
 
+class RandomBot(BasicBot):
+    def __init__(self):
+        super().__init__()
+
+    async def test_random(self, interaction: discord.Interaction) -> None:
+        print(self.voice_clients)
+        await interaction.response.send_message("TESTING RANDOM CLASS")
+
+    # TODO: flip_coin
+    # TODO: random_joke
+    # TODO: random_num num1 num2
+    # TODO: random_fact
+    # TODO: random_shrek
+    # TODO: check_movie movie
+    # TODO: check_marvel_character
+    # TODO: check_marvel_film # https://developer.marvel.com/docs
+
+
+class DonkeyBot(MusicBot, RandomBot):
+    def __init__(self):
+        super().__init__()
+
+    # TODO: check_eng_word
+    # TODO: weather where
+
+
 bot = DonkeyBot()
 
 
@@ -511,3 +542,14 @@ async def skip_command(interaction: discord.Interaction):
 @bot.tree.command(name="play_sui", description="Play sui")
 async def play_sui_command(interaction: discord.Interaction):
     await bot.play_sui(interaction)
+
+
+@bot.tree.command(name="test_random", description="TESTING")
+async def test_random_command(interaction: discord.Interaction):
+    await bot.test_random(interaction)
+
+
+# TODO: hosting
+# TODO: sprawdź type hinty
+# TODO: poczytaj o API
+# TODO: podział na dwa różne boty
