@@ -85,6 +85,11 @@ class DonkeyBot(commands.Bot):
 
     async def play(self, interaction: discord.Interaction, url: Union[str, None],
                    if_next_in_queue=False, if_previous_was_skipped=False) -> None:
+        if self.if_looped:
+            await interaction.response.send_message(
+                "`The audio is looped currently. Use /end_loop if you want it to stop.`")
+            return None
+
         if not validations.is_play_func_valid(url, if_previous_was_skipped):
             wrong_use_info = ("If you have if_previous_was_skipped flag set to True, "
                               "you shouldn't pass any url, url should be set to None")
@@ -199,6 +204,7 @@ class DonkeyBot(commands.Bot):
                     print(e)
                     await interaction.followup.send("`Something went wrong with playing audio...`")
                     self.is_preparing_to_play = False
+                    self.if_queue_was_stopped = False
         else:
             if if_next_in_queue:
                 await interaction.followup.send(
