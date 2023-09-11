@@ -4,7 +4,7 @@ import yt_dlp as youtube_dl
 import asyncio
 import validations
 from audio_queue import AudioQueue
-from typing import Union
+from typing import Union, NoReturn
 
 FFMPEG_OPTIONS = {
     "before_options": "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5",
@@ -12,7 +12,7 @@ FFMPEG_OPTIONS = {
 }
 
 
-# commands.Bot is subclass of discord.Client
+# commands.Bot is a subclass of discord.Client
 class BasicBot(commands.Bot):
     def __init__(self):
         super().__init__(command_prefix='.', intents=discord.Intents.all())
@@ -20,6 +20,9 @@ class BasicBot(commands.Bot):
     async def on_ready(self) -> None:
         print(f"[BOT-INFO] {self.user} is now running")
 
+        await self.sync_commands_with_error_handling()
+
+    async def sync_commands_with_error_handling(self) -> Union[None, NoReturn]:
         try:
             synced = await self.tree.sync()
             print(f"[BOT-INFO] Synced {len(synced)} command(s)")
@@ -30,29 +33,49 @@ class BasicBot(commands.Bot):
         if message.author == self.user:
             return None
 
-        username = str(message.author)
-        user_message = str(message.content)
-        channel = str(message.channel)
-
-        print(f"[USER-INFO] {username} said '{user_message}' on channel {channel}")
+        self.print_message_info(message)
 
         for mentioned_member in message.mentions:
             if mentioned_member.name == "DonkeyBot" and mentioned_member.bot is True:
-                if "?" == message.content[-1]:
-                    await message.reply("I invoke my right not to answer this question")
-                else:
-                    await message.reply("Who asked?")
+                await self.handle_reply_when_mentioned(message)
+
+    def print_message_info(self, message: discord.Message) -> None:
+        username = str(message.author)
+        user_message = str(message.content)
+        channel = str(message.channel)
+        print(f"[USER-INFO] {username} said '{user_message}' on channel {channel}")
+
+    async def handle_reply_when_mentioned(self, message: discord.Message) -> None:
+        if "?" == message.content[-1]:
+            await message.reply("I invoke my right not to answer this question")
+        else:
+            await message.reply("Who asked?")
 
     async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState,
                                     after: discord.VoiceState) -> None:
         if self.voice_clients:
             bots_voice = discord.utils.get(self.voice_clients, guild=member.guild)
-            if before.channel == bots_voice.channel or after.channel == bots_voice.channel:
-                num_of_members = len(bots_voice.channel.members)
-                if num_of_members == 1:
-                    print("[BOT] The bot left the empty channel")
-                    await bots_voice.disconnect()
-                    self.reset_attributes()
+            if bots_voice:
+                await self.disconnect_with_reset_when_bot_alone(bots_voice, before, after)
+
+    async def disconnect_with_reset_when_bot_alone(self, bots_voice: discord.VoiceClient,
+                                                   before: discord.VoiceState,
+                                                   after: discord.VoiceState) -> None:
+        if_bots_channel_changed = (before.channel == bots_voice.channel or
+                                   after.channel == bots_voice.channel)
+        if if_bots_channel_changed:
+            num_of_members = len(bots_voice.channel.members)
+            if num_of_members == 1:
+                print("[BOT] The bot left the empty channel")
+                await bots_voice.disconnect()
+                self.reset_attributes()
+
+    def reset_attributes(self) -> None:
+        info = ("[POTENCIAL-PROBLEM] If your bot have some additional "
+                "attributes that you want to reset "
+                "after disconnecting the bot, then you should "
+                "overwrite 'reset_attributes' method...")
+        print(info)
 
 
 class MusicBot(BasicBot):
