@@ -227,8 +227,8 @@ class MusicBot(BasicBot):
 
                 try:
                     source = await discord.FFmpegOpusAudio.from_probe(url, **FFMPEG_OPTIONS)
-                    bots_voice.play(source)
                     self.is_preparing_to_play = False
+                    bots_voice.play(source)
 
                     if duration_sec > 0:
                         while bots_voice.is_playing() or bots_voice.is_paused():
@@ -263,7 +263,7 @@ class MusicBot(BasicBot):
         self.reset_attributes_without_queue()
 
         if self.url_queue.queue:
-            await self.play(interaction, None, if_previous_was_skipped=True)
+            await self.play(interaction, url=None, if_previous_was_skipped=True)
         else:
             await interaction.response.send_message(
                 "`Skip command was executed, but the audio queue is empty`")
@@ -375,65 +375,66 @@ class MusicBot(BasicBot):
         bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
 
         if bots_voice and bots_voice.is_connected():
-            if bots_voice.is_playing():
-                bots_voice.pause()
-                await interaction.response.send_message(
-                    "`The bot has been paused`")
-            else:
-                await interaction.response.send_message(
-                    "`The bot is currently not playing`")
+            await self.pause_bot_playing(interaction, bots_voice)
         else:
             await interaction.response.send_message(
                 "`The bot is not conencted to any channel`")
+
+    async def pause_bot_playing(self, interaction: discord.Interaction,
+                                bots_voice: discord.VoiceClient) -> None:
+        if bots_voice.is_playing():
+            bots_voice.pause()
+            await interaction.response.send_message(
+                "`The bot has been paused`")
+        else:
+            await interaction.response.send_message(
+                "`The bot is currently not playing`")
 
     async def resume(self, interaction: discord.Interaction) -> None:
         bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
 
         if bots_voice and bots_voice.is_connected():
-            if bots_voice.is_paused():
-                bots_voice.resume()
-                await interaction.response.send_message(
-                    "`The bot has been resumed`")
-            else:
-                if bots_voice.is_playing():
-                    await interaction.response.send_message(
-                        "`The bot is currently playing something`")
-                else:
-                    await interaction.response.send_message(
-                        "`The bot is currently not paused`")
+            await self.resume_paused_bot(interaction, bots_voice)
         else:
             await interaction.response.send_message(
                 "`The bot is not conencted to any channel`")
+
+    async def resume_paused_bot(self, interaction: discord.Interaction,
+                                bots_voice: discord.VoiceClient) -> None:
+        if bots_voice.is_paused():
+            bots_voice.resume()
+            await interaction.response.send_message(
+                "`The bot has been resumed`")
+        else:
+            if bots_voice.is_playing():
+                await interaction.response.send_message(
+                    "`The bot is currently playing something`")
+            else:
+                await interaction.response.send_message(
+                    "`The bot is currently not paused`")
 
     async def stop(self, interaction: discord.Interaction, without_response=False) -> None:
         bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
 
         if bots_voice and bots_voice.is_connected():
-            if bots_voice.is_playing():
-                bots_voice.stop()
-                self.if_queue_was_stopped = True
-                self.if_looped = False
-                if not without_response:
-                    await interaction.response.send_message("`The bot has been stopped`")
-            else:
-                if not without_response:
-                    await interaction.response.send_message(
-                        "`You cannot stop the bot which is currently not playing`")
+            await self.stop_bot_playing(interaction, bots_voice, without_response)
         else:
             if not without_response:
                 await interaction.response.send_message(
                     "`The bot is not conencted to any channel`")
 
-    async def disconnect(self, interaction: discord.Interaction) -> None:
-        bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
-
-        if bots_voice and bots_voice.is_connected():
-            await bots_voice.disconnect()
-            await interaction.response.send_message(
-                "`The bot has been disconnect from your channel`")
+    async def stop_bot_playing(self, interaction: discord.Interaction,
+                               bots_voice: discord.VoiceClient, without_response: bool) -> None:
+        if bots_voice.is_playing():
+            bots_voice.stop()
+            self.if_queue_was_stopped = True
+            self.if_looped = False
+            if not without_response:
+                await interaction.response.send_message("`The bot has been stopped`")
         else:
-            await interaction.response.send_message(
-                "`The bot is not currently on any channel`")
+            if not without_response:
+                await interaction.response.send_message(
+                    "`You cannot stop the bot which is currently not playing`")
 
     async def show_queue(self, interaction: discord.Interaction) -> None:
         await interaction.response.send_message(str(self.url_queue))
@@ -465,15 +466,28 @@ class MusicBot(BasicBot):
         self.reset_attributes_without_queue()
         self.url_queue = AudioQueue()
 
-    async def reset_bot(self, interaction: discord.Interaction) -> None:
+    async def reset_bot(self, interaction: discord.Interaction,
+                        without_response: bool = False) -> None:
         self.reset_attributes()
 
         bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
-        if bots_voice and bots_voice.is_connected() and bots_voice.is_playing():
+        if bots_voice and bots_voice.is_playing():
             bots_voice.stop()
-            bots_voice.disconnect()
 
-        await interaction.response.send_message("The bot was reset")
+        if not without_response:
+            await interaction.response.send_message("The bot was reset")
+
+    async def disconnect(self, interaction: discord.Interaction) -> None:
+        await self.reset_bot(interaction, without_response=True)
+
+        bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
+        if bots_voice and bots_voice.is_connected():
+            await bots_voice.disconnect()
+            await interaction.response.send_message(
+                "`The bot has been disconnect from your channel`")
+        else:
+            await interaction.response.send_message(
+                "`The bot is not currently on any channel`")
 
 
 class RandomBot(BasicBot):
@@ -543,7 +557,7 @@ async def stop_command(interaction: discord.Interaction):
     await bot.stop(interaction)
 
 
-@bot.tree.command(name="disconnect", description="Disconnect the bot from the channel")
+@bot.tree.command(name="disconnect", description="Disconnect the bot from the channel with reset")
 async def disconnect_command(interaction: discord.Interaction):
     await bot.disconnect(interaction)
 
