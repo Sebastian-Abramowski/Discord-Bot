@@ -91,15 +91,21 @@ class MusicBot(BasicBot):
             channel = interaction.user.voice.channel
             bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
 
-            if bots_voice and bots_voice.is_connected():
-                await self.move_to_users_channel(interaction, bots_voice, channel,
-                                                 without_response)
-            else:
-                await self.connect_to_users_channel(interaction, channel,
-                                                    without_response)
+            await self.join_users_channel(interaction, bots_voice, channel,
+                                          without_response)
         else:
             await self.response_if_user_has_no_channel(interaction,
                                                        without_response)
+
+    async def join_users_channel(self, interaction: discord.Interaction,
+                                 bots_voice: discord.VoiceClient,
+                                 channel: discord.VoiceChannel, without_response: bool) -> None:
+        if bots_voice and bots_voice.is_connected():
+            await self.move_to_users_channel(interaction, bots_voice, channel,
+                                             without_response)
+        else:
+            await self.connect_to_users_channel(interaction, channel,
+                                                without_response)
 
     async def move_to_users_channel(self, interaction: discord.Interaction,
                                     bots_voice: discord.VoiceClient,
@@ -268,28 +274,21 @@ class MusicBot(BasicBot):
             await interaction.response.send_message(
                 "`Skip command was executed, but the audio queue is empty`")
 
+    async def play_sui(self, interaction: discord.Interaction) -> None:
+        await self.play_from_file(interaction, "Assets/sui.mp3", "SUUUUUUI")
+
     async def play_from_file(self, interaction: discord.Interaction, path_to_audio: str,
                              message_after_playing: str) -> None:
         if self.if_looped:
-            await interaction.response.send_message(
-                "`The audio is looped currently. Use /end_loop if you want it to stop.`")
+            await self.send_response_after_play_request_when_looped(interaction)
             return None
 
         bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
-
-        if not bots_voice:
-            await self.join(interaction, without_response=True)
-            bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
-
-            # if there is still no voice connection that means that the user is in no channel
-            if not bots_voice:
-                await interaction.response.send_message("The user is not connected to any channel")
-                return None
-
-        if not bots_voice:
-            await interaction.response.send_message(
-                "`The bot is not connected to any channel`")
+        if_bot_has_channel = await self.has_bot_joined_channel(interaction, bots_voice)
+        if not if_bot_has_channel:
+            await interaction.response.send_message("`The user is not connected to any channel`")
             return None
+        bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
 
         if bots_voice:
             if bots_voice.is_playing():
@@ -307,8 +306,21 @@ class MusicBot(BasicBot):
                         f"`There was a problem with plaing {path_to_audio} audio file`")
                     return None
 
-    async def play_sui(self, interaction: discord.Interaction) -> None:
-        await self.play_from_file(interaction, "Assets/sui.mp3", "SUUUUUUI")
+    async def has_bot_joined_channel(self, interaction: discord.Interaction,
+                                     bots_voice: discord.VoiceClient) -> bool:
+        if not bots_voice:
+            await self.join(interaction, without_response=True)
+            bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
+
+            # if there is still no voice connection that means that the user is in no channel
+            if not bots_voice:
+                return False
+        return True
+
+    async def send_response_after_play_request_when_looped(self,
+                                                           interaction: discord.Interaction) -> None:
+        await interaction.response.send_message(
+            "`The audio is looped currently. Use /end_loop if you want it to stop.`")
 
     async def loop_audio(self, interaction: discord.Interaction, url: str) -> None:
         self.if_looped = True
@@ -406,12 +418,16 @@ class MusicBot(BasicBot):
             await interaction.response.send_message(
                 "`The bot has been resumed`")
         else:
-            if bots_voice.is_playing():
-                await interaction.response.send_message(
-                    "`The bot is currently playing something`")
-            else:
-                await interaction.response.send_message(
-                    "`The bot is currently not paused`")
+            await self.send_response_after_resume_when_not_paused(interaction, bots_voice)
+
+    async def send_response_after_resume_when_not_paused(self, interaction: discord.Interaction,
+                                                         bots_voice: discord.VoiceClient) -> None:
+        if bots_voice.is_playing():
+            await interaction.response.send_message(
+                "`The bot is currently playing something`")
+        else:
+            await interaction.response.send_message(
+                "`The bot is currently not paused`")
 
     async def stop(self, interaction: discord.Interaction, without_response=False) -> None:
         bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
