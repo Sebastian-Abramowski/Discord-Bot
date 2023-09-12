@@ -92,24 +92,41 @@ class MusicBot(BasicBot):
             bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
 
             if bots_voice and bots_voice.is_connected():
-                if bots_voice.channel == channel:
-                    if not without_response:
-                        await interaction.response.send_message(
-                            "`The bot is already on your channel`")
-                else:
-                    await bots_voice.move_to(channel)
-                    if not without_response:
-                        await interaction.response.send_message(
-                            "`The bot has been moved to your channel`")
+                await self.move_to_users_channel(interaction, bots_voice, channel,
+                                                 without_response)
             else:
-                bots_voice = await channel.connect()
-                if not without_response:
-                    await interaction.response.send_message(
-                        "`The bot has joined your channel`")
+                await self.connect_to_users_channel(interaction, channel,
+                                                    without_response)
         else:
+            await self.response_if_user_has_no_channel(interaction,
+                                                       without_response)
+
+    async def move_to_users_channel(self, interaction: discord.Interaction,
+                                    bots_voice: discord.VoiceClient,
+                                    channel: discord.VoiceChannel, without_response: bool) -> None:
+        if bots_voice.channel == channel:
             if not without_response:
                 await interaction.response.send_message(
-                    "`You are not in a voice channel.`")
+                    "`The bot is already on your channel`")
+        else:
+            await bots_voice.move_to(channel)
+            if not without_response:
+                await interaction.response.send_message(
+                    "`The bot has been moved to your channel`")
+
+    async def connect_to_users_channel(self, interaction: discord.Interaction,
+                                       channel: discord.VoiceChannel,
+                                       without_response: bool) -> None:
+        await channel.connect()
+        if not without_response:
+            await interaction.response.send_message(
+                "`The bot has joined your channel`")
+
+    async def response_if_user_has_no_channel(self, interaction: discord.Interaction,
+                                              without_response: bool) -> None:
+        if not without_response:
+            await interaction.response.send_message(
+                "`You are not in a voice channel.`")
 
     async def play(self, interaction: discord.Interaction, url: Union[str, None],
                    if_next_in_queue=False, if_previous_was_skipped=False) -> None:
