@@ -84,6 +84,7 @@ class MusicBot(BasicBot):
         self.if_looped = False
         self.is_preparing_to_play = False
         self.if_queue_was_stopped = False
+        self.if_skipped = False
         self.url_queue = AudioQueue()
 
     async def join(self, interaction: discord.Interaction, without_response=False) -> None:
@@ -135,101 +136,74 @@ class MusicBot(BasicBot):
                 "`You are not in a voice channel.`")
 
     async def play(self, interaction: discord.Interaction, url: Union[str, None],
-                   if_next_in_queue=False, if_previous_was_skipped=False) -> None:
-        if self.if_looped:
-            await self.send_response_after_play_request_when_looped(interaction)
-            return None
-
-        if self.is_url_youtube_playlist(url):
-            await self.send_response_after_trying_to_play_yt_playlist(interaction)
-            return None
-
-        if not validations.is_play_func_valid(url, if_previous_was_skipped):
-            wrong_use_info = ("If you have if_previous_was_skipped flag set to True, "
-                              "you shouldn't pass any url, url should be set to None")
-            print("[INFO] " + wrong_use_info)
-            await interaction.response.send_message(
-                "The audio wasn't played due to wrong function arguments")
-            return None
-
+                   if_next_in_queue=False, if_skipped=False) -> None:
         self.if_queue_was_stopped = False
-
-        guild = interaction.guild
         # VoiceClient associated with the specified guild (there is one bot per server)
-        bots_voice = discord.utils.get(self.voice_clients, guild=guild)
+        bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
 
-        if validations.is_url_valid(url) and bots_voice and bots_voice.is_paused():
+        if self.if_looped:
+            await self.respond_or_followup(
+                interaction, "`The audio is looped currently. Use /end_loop if you want it to stop.`")
+            return None
+
+        # If if_next_in_queue is True, that means the url was already validated
+        if not if_next_in_queue:
+            if url and self.is_url_youtube_playlist(url):
+                await self.respond_or_followup(
+                    interaction,
+                    "`Passed url leads to youtube playlist. We advise to use single videos`")
+                return None
+
+            if url and not validations.is_url_valid(url):
+                await self.respond_or_followup(interaction,
+                                               f"`You passed invalid url. Passed url: {url}`")
+                return None
+
+        if bots_voice and bots_voice.is_paused():
             self.url_queue.push(url)
             bots_voice.resume()
-            await interaction.response.send_message(
-                "`Prioviosly paused bot was resumed and the passed url was added to the queue`")
+            response_msg = ("`Prioviosly paused bot was resumed and "
+                            "the passed url was added to the queue`")
+            await self.respond_or_followup(interaction, response_msg)
             return None
 
-        if not bots_voice:
-            await self.join(interaction, without_response=True)
-            bots_voice = discord.utils.get(self.voice_clients, guild=guild)
-
-            # if there is still no voice connection that means that the user is in no channel
-            if not bots_voice:
-                await interaction.response.send_message("The user is not connected to any channel")
-                return None
-
-        if not if_previous_was_skipped and not validations.is_url_valid(url):
-            if if_next_in_queue:
-                await interaction.followup.send(
-                    f"`You passed invalid url. Passed url: {url}`")
-            else:
-                await interaction.response.send_message(
-                    f"`You passed invalid url. Passed url: {url}`")
+        bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
+        if_bot_has_channel = await self.has_bot_joined_channel(interaction, bots_voice)
+        if not if_bot_has_channel:
+            await self.respond_or_followup(interaction, "`The user is not connected to any channel`")
             return None
-        elif not if_previous_was_skipped and "youtube" in url and "list=" in url:
-            if if_next_in_queue:
-                await interaction.followup.send(
-                    "`Passed url leads to youtube playlist. We advise to use single videos`")
-            else:
-                await interaction.response.send_message(
-                    "`Passed url leads to youtube playlist. We advise to use single videos`")
-            return None
-        else:
-            if not if_previous_was_skipped and not if_next_in_queue:
-                self.url_queue.push(url)
+        bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
+
+        # Managing queue
+        if url and not if_next_in_queue:
+            self.url_queue.push(url)
             if bots_voice.is_playing() or self.is_preparing_to_play:
-                if if_next_in_queue:
-                    await interaction.followup.send("`Audio queue was updated`")
-                else:
-                    await interaction.response.send_message("`Audio queue was updated`")
+                await self.respond_or_followup(interaction, "`Audio queue was updated`")
                 return None
-            if not if_next_in_queue:
-                url = self.url_queue.pop()
+        if not if_next_in_queue:
+            url = self.url_queue.pop()
 
         if bots_voice and bots_voice.is_connected():
             self.is_preparing_to_play = True
             if bots_voice.is_playing():
-                if if_next_in_queue:
-                    await interaction.followup.send("`Something is already being played`")
-                else:
-                    await interaction.response.send_message("`Something is already being played`")
+                await self.respond_or_followup(interaction, "`Something is already being played`")
                 return None
             else:
-                if if_next_in_queue:
-                    await interaction.followup.send(f"Currently playing: {url}")
-                else:
-                    await interaction.response.send_message(f"Currently playing: {url}")
+                await self.respond_or_followup(interaction, f"Currently playing: {url}")
 
                 # Use youtube-dl to extract the direct audio URL
                 ydl_opts = {'format': 'bestaudio/best',
                             'postprocessors': [{'key': 'FFmpegExtractAudio',
                                                 'preferredcodec': 'mp3'}]}
-                duration_sec = 0
                 try:
                     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
                         info = ydl.extract_info(url, download=False)
                         url = info['url']  # url to audio, there the audio data is in Opus format
                         # Opus format - way of compressing and encoding the audio data
-                        duration_sec = info.get("duration", 0)
                 except Exception as e:
                     print(e)
-                    await interaction.followup.send(
+                    await self.respond_or_followup(
+                        interaction,
                         "`Something went wrong with extracting audio URL...`")
                     self.is_preparing_to_play = False
                     return None
@@ -239,40 +213,52 @@ class MusicBot(BasicBot):
                     self.is_preparing_to_play = False
                     bots_voice.play(source)
 
-                    if duration_sec > 0:
-                        while bots_voice.is_playing() or bots_voice.is_paused():
-                            await asyncio.sleep(1)
+                    while bots_voice.is_playing() or bots_voice.is_paused():
+                        await asyncio.sleep(1)
 
-                        # await asyncio.sleep(duration_sec + 1)
-                        if self.url_queue.queue and not self.if_queue_was_stopped:
-                            bots_voice.stop()
+                    if self.if_skipped:
+                        await self.respond_or_followup(interaction, "`Last song was skipped`")
+                        self.if_skipped = False
+                        return None
 
-                            await self.play(interaction, self.url_queue.pop(),
-                                            if_next_in_queue=True)
-                    else:
-                        await interaction.followup.send(
-                            "`Something went wrong with reading the video length, " +
-                            "the queue stopped playing...`")
+                    if self.url_queue.queue and not self.if_queue_was_stopped:
+                        bots_voice.stop()
 
+                        await self.play(interaction, self.url_queue.pop(),
+                                        if_next_in_queue=True)
                 except Exception as e:
                     print(e)
-                    await interaction.followup.send("`Something went wrong with playing audio...`")
+                    await self.respond_or_followup(interaction,
+                                                   "`Something went wrong with playing audio...`")
                     self.is_preparing_to_play = False
                     self.if_queue_was_stopped = False
         else:
-            if if_next_in_queue:
-                await interaction.followup.send(
-                    "`The bot is not conencted to any channel`")
-            else:
-                await interaction.response.send_message(
-                    "`The bot is not conencted to any channel`")
+            await self.respond_or_followup(interaction, "`The bot is not conencted to any channel`")
+
+    async def respond_or_followup(self, interaction: discord.Interaction, message: str) -> None:
+        try:
+            await interaction.response.send_message(message)
+        except discord.errors.InteractionResponded:
+            await interaction.followup.send(message)
 
     async def skip(self, interaction: discord.Interaction) -> None:
+        if self.if_looped:
+            msg = ("`You cannot skip a song that is playing in a loop. "
+                   "If you want to end the loop, you should use '/end_loop' or '/stop'`")
+            await interaction.response.send_message(msg)
+            return None
+
         await self.stop(interaction, without_response=True)
-        self.reset_attributes_without_queue()
+        self.reset_attributes_without_queue_and_if_skipped()
 
         if self.url_queue.queue:
-            await self.play(interaction, url=None, if_previous_was_skipped=True)
+            bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
+            if bots_voice.is_playing():
+                self.if_skipped = True
+                await self.play(interaction, url=None)
+            else:
+                await interaction.response.send_message(
+                    "'The skip command was executed, but nothing is currently playing'")
         else:
             await interaction.response.send_message(
                 "`Skip command was executed, but the audio queue is empty`")
@@ -283,7 +269,8 @@ class MusicBot(BasicBot):
     async def play_from_file(self, interaction: discord.Interaction, path_to_audio: str,
                              message_after_playing: str) -> None:
         if self.if_looped:
-            await self.send_response_after_play_request_when_looped(interaction)
+            await interaction.response.send_message(
+                "`The audio is looped currently. Use /end_loop if you want it to stop.`")
             return None
 
         bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
@@ -330,16 +317,12 @@ class MusicBot(BasicBot):
                 return False
         return True
 
-    async def send_response_after_play_request_when_looped(self,
-                                                           interaction: discord.Interaction) -> None:
-        await interaction.response.send_message(
-            "`The audio is looped currently. Use /end_loop if you want it to stop.`")
-
     async def loop_audio(self, interaction: discord.Interaction, url: str) -> None:
         self.if_looped = True
 
         if self.is_url_youtube_playlist(url):
-            await self.send_response_after_trying_to_play_yt_playlist(interaction)
+            await interaction.response.send_message(
+                "`Passed url leads to youtube playlist. We advise to use single videos`")
             return None
 
         if not validations.is_url_valid(url):
@@ -354,32 +337,36 @@ class MusicBot(BasicBot):
         bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
 
         if bots_voice and bots_voice.is_connected():
-            if bots_voice.is_playing():
-                await interaction.response.send_message("`Something is already playing`")
-                return None
+            await self.play_audio_in_loop(interaction, bots_voice, url)
 
-            await interaction.response.send_message(f"Currently looped: {url}")
+    async def play_audio_in_loop(self, interaction: discord.Interaction,
+                                 bots_voice: discord.VoiceClient, url: str) -> None:
+        if bots_voice.is_playing():
+            await interaction.response.send_message("`Something is already playing`")
+            return None
 
-            url = self.extract_direct_audio_url(url)
-            if not url:
+        await interaction.response.send_message(f"Currently looped: {url}")
+
+        url = self.extract_direct_audio_url(url)
+        if not url:
+            await interaction.followup.send(
+                "`Something went wrong with extracting audio URL...`")
+            return None
+
+        while self.if_looped:
+            if_played_without_errors = await self.try_playing_from_direct_audio_url(bots_voice,
+                                                                                    url)
+            if not if_played_without_errors:
                 await interaction.followup.send(
-                    "`Something went wrong with extracting audio URL...`")
+                    "`Something went wrong with playing audio...`")
                 return None
 
-            while self.if_looped:
-                if_played_without_errors = await self.try_playing_from_direct_audio_url(bots_voice,
-                                                                                        url)
-                if not if_played_without_errors:
-                    await interaction.followup.send(
-                        "`Something went wrong with playing audio...`")
-                    return None
+            while bots_voice.is_playing():
+                await asyncio.sleep(1)
 
-                while bots_voice.is_playing():
-                    await asyncio.sleep(1)
-
-                # If voice (VoiceClient) was stopped during asyncio.sleep, another voice.stop(),
-                # even though the voice has been already stopped, won't do anything
-                bots_voice.stop()
+            # If voice (VoiceClient) was stopped during asyncio.sleep, another voice.stop(),
+            # even though the voice has been already stopped, won't do anything
+            bots_voice.stop()
 
     async def try_playing_from_direct_audio_url(self, bots_voice: discord.VoiceClient, url: str) -> bool:
         # Returns True if there was no errors, otherwise False
@@ -409,11 +396,6 @@ class MusicBot(BasicBot):
 
     def is_url_youtube_playlist(self, url: str) -> bool:
         return "youtube" in url and "list=" in url
-
-    async def send_response_after_trying_to_play_yt_playlist(self,
-                                                             interaction: discord.Interaction) -> None:
-        await interaction.response.send_message(
-                "`Passed url leads to youtube playlist. We advise to use single videos`")
 
     async def end_loop(self, interaction: discord.Interaction) -> None:
         self.if_looped = False
@@ -509,13 +491,14 @@ class MusicBot(BasicBot):
         self.url_queue.push_with_priority(url)
         await interaction.response.send_message("`Item was put on the top of the audio queue`")
 
-    def reset_attributes_without_queue(self) -> None:
+    def reset_attributes_without_queue_and_if_skipped(self) -> None:
         self.if_looped = False
         self.is_preparing_to_play = False
         self.if_queue_was_stopped = False
 
     def reset_attributes(self) -> None:
-        self.reset_attributes_without_queue()
+        self.reset_attributes_without_queue_and_if_skipped()
+        self.if_skipped = False
         self.url_queue = AudioQueue()
 
     async def reset_bot(self, interaction: discord.Interaction,
