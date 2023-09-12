@@ -137,8 +137,11 @@ class MusicBot(BasicBot):
     async def play(self, interaction: discord.Interaction, url: Union[str, None],
                    if_next_in_queue=False, if_previous_was_skipped=False) -> None:
         if self.if_looped:
-            await interaction.response.send_message(
-                "`The audio is looped currently. Use /end_loop if you want it to stop.`")
+            await self.send_response_after_play_request_when_looped(interaction)
+            return None
+
+        if self.is_url_youtube_playlist(url):
+            await self.send_response_after_trying_to_play_yt_playlist(interaction)
             return None
 
         if not validations.is_play_func_valid(url, if_previous_was_skipped):
@@ -146,7 +149,7 @@ class MusicBot(BasicBot):
                               "you shouldn't pass any url, url should be set to None")
             print("[INFO] " + wrong_use_info)
             await interaction.response.send_message(
-                "The audio wasn't played due to wrong function arguemnts")
+                "The audio wasn't played due to wrong function arguments")
             return None
 
         self.if_queue_was_stopped = False
@@ -290,21 +293,31 @@ class MusicBot(BasicBot):
             return None
         bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
 
-        if bots_voice:
+        await self.play_audio_from_file(interaction, bots_voice, path_to_audio,
+                                        message_after_playing)
+
+    async def play_audio_from_file(self, interaction: discord.Interaction,
+                                   bots_voice: discord.VoiceClient,
+                                   path_to_audio: str, message_after_playing: str) -> None:
+        if bots_voice and bots_voice.is_connected():
             if bots_voice.is_playing():
                 await interaction.response.send_message(
                     "`The bot is currently playing something`")
-                return None
             else:
-                try:
-                    source = discord.FFmpegOpusAudio(path_to_audio)
-                    bots_voice.play(source)
-                    await interaction.response.send_message(message_after_playing)
-                except Exception as e:
-                    print(e)
-                    await interaction.response.send_message(
-                        f"`There was a problem with plaing {path_to_audio} audio file`")
-                    return None
+                await self.try_playing_audio_from_file(interaction, bots_voice, path_to_audio,
+                                                       message_after_playing)
+
+    async def try_playing_audio_from_file(self, interaction: discord.Interaction,
+                                          bots_voice: discord.VoiceClient,
+                                          path_to_audio: str, message_after_playing: str) -> None:
+        try:
+            source = discord.FFmpegOpusAudio(path_to_audio)
+            bots_voice.play(source)
+            await interaction.response.send_message(message_after_playing)
+        except Exception as e:
+            print(e)
+            await interaction.response.send_message(
+                f"`There was a problem with playing {path_to_audio} audio file`")
 
     async def has_bot_joined_channel(self, interaction: discord.Interaction,
                                      bots_voice: discord.VoiceClient) -> bool:
@@ -325,59 +338,82 @@ class MusicBot(BasicBot):
     async def loop_audio(self, interaction: discord.Interaction, url: str) -> None:
         self.if_looped = True
 
-        if "youtube" in url and "list=" in url:
-            await interaction.response.send_message(
-                "`Passed url leads to youtube playlist. We advise to use single videos`")
+        if self.is_url_youtube_playlist(url):
+            await self.send_response_after_trying_to_play_yt_playlist(interaction)
             return None
 
-        guild = interaction.guild
-        # VoiceClient associated with the specified guild (there is one bot per server)
-        bots_voice = discord.utils.get(self.voice_clients, guild=guild)
+        if not validations.is_url_valid(url):
+            await interaction.response.send_message(f"`You passed invalid url. Passed url: {url}`")
+            return None
+
+        bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
+        if_bot_has_channel = await self.has_bot_joined_channel(interaction, bots_voice)
+        if not if_bot_has_channel:
+            await interaction.response.send_message("`The user is not connected to any channel`")
+            return None
+        bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
 
         if bots_voice and bots_voice.is_connected():
             if bots_voice.is_playing():
                 await interaction.response.send_message("`Something is already playing`")
                 return None
-            else:
-                await interaction.response.send_message(f"Currently looped: {url}")
 
-                if not validations.is_url_valid(url):
-                    await interaction.followup.send(f"`You passed invalid url. Passed url: {url}`")
-                    return None
+            await interaction.response.send_message(f"Currently looped: {url}")
 
-                # Use youtube-dl to extract the direct audio URL
-                ydl_opts = {'format': 'bestaudio/best',
-                            'postprocessors': [{'key': 'FFmpegExtractAudio',
-                                                'preferredcodec': 'mp3'}]}
-                try:
-                    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-                        info = ydl.extract_info(url, download=False)
-                        url = info['url']  # url to audio, there the audio data is in Opus format
-                        # Opus format - way of compressing and encoding the audio data
-                except Exception as e:
-                    print(e)
+            url = self.extract_direct_audio_url(url)
+            if not url:
+                await interaction.followup.send(
+                    "`Something went wrong with extracting audio URL...`")
+                return None
+
+            while self.if_looped:
+                if_played_without_errors = await self.try_playing_from_direct_audio_url(bots_voice,
+                                                                                        url)
+                if not if_played_without_errors:
                     await interaction.followup.send(
-                        "`Something went wrong with extracting audio URL...`")
+                        "`Something went wrong with playing audio...`")
                     return None
 
-                while self.if_looped:
-                    try:
-                        source = await discord.FFmpegOpusAudio.from_probe(url, **FFMPEG_OPTIONS)
-                        bots_voice.play(source)
-                    except Exception as e:
-                        print(e)
-                        await interaction.followup.send(
-                            "`Something went wrong with playing audio...`")
+                while bots_voice.is_playing():
+                    await asyncio.sleep(1)
 
-                    while bots_voice.is_playing():
-                        await asyncio.sleep(1)
+                # If voice (VoiceClient) was stopped during asyncio.sleep, another voice.stop(),
+                # even though the voice has been already stopped, won't do anything
+                bots_voice.stop()
 
-                    # If voice (VoiceClient) was stopped during asyncio.sleep, another voice.stop(),
-                    # even thoough the voice has been already stopped, won't do anything
-                    bots_voice.stop()
-        else:
-            await interaction.response.send_message(
-                "`The bot is not conencted to any channel`")
+    async def try_playing_from_direct_audio_url(self, bots_voice: discord.VoiceClient, url: str) -> bool:
+        # Returns True if there was no errors, otherwise False
+
+        try:
+            source = await discord.FFmpegOpusAudio.from_probe(url, **FFMPEG_OPTIONS)
+            bots_voice.play(source)
+            return True
+        except Exception as e:
+            print(e)
+            return False
+
+    def extract_direct_audio_url(self, url: str) -> Union[str, None]:
+        # Use youtube-dl to extract the direct audio URL
+        ydl_opts = {'format': 'bestaudio/best',
+                    'postprocessors': [{'key': 'FFmpegExtractAudio',
+                                        'preferredcodec': 'mp3'}]}
+        try:
+            with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(url, download=False)
+                url = info['url']  # url to audio, there the audio data is in Opus format
+                # Opus format - way of compressing and encoding the audio data
+                return url
+        except Exception as e:
+            print(e)
+            return None
+
+    def is_url_youtube_playlist(self, url: str) -> bool:
+        return "youtube" in url and "list=" in url
+
+    async def send_response_after_trying_to_play_yt_playlist(self,
+                                                             interaction: discord.Interaction) -> None:
+        await interaction.response.send_message(
+                "`Passed url leads to youtube playlist. We advise to use single videos`")
 
     async def end_loop(self, interaction: discord.Interaction) -> None:
         self.if_looped = False
