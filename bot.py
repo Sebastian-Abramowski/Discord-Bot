@@ -149,6 +149,7 @@ class MusicBot(BasicBot):
             return None
 
         old_url_or_search_query = url_or_search_query
+        url = None
         if url_or_search_query:
             url = self.get_validated_url(url_or_search_query, if_play_next_in_queue)
             if not url:
@@ -156,8 +157,6 @@ class MusicBot(BasicBot):
                     interaction,
                     f"`Passed search query: \n{old_url_or_search_query}\ncouldn't be found`")
                 return None
-        else:
-            url = None
 
         if bots_voice and bots_voice.is_paused():
             self.url_queue.push(url)
@@ -229,7 +228,6 @@ class MusicBot(BasicBot):
             'quiet': True,
             'extract_flat': True,
         }
-
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
             # Search for videos matching the query and get the URL of the first result
             search_results = ydl.extract_info(f'ytsearch:{search_query}', download=False)
@@ -265,7 +263,6 @@ class MusicBot(BasicBot):
         return True
 
     def extract_direct_audio_url(self, url: str) -> Union[str, None]:
-        # Use youtube-dl to extract the direct audio URL
         ydl_opts = {'format': 'bestaudio/best',
                     'postprocessors': [{'key': 'FFmpegExtractAudio',
                                         'preferredcodec': 'mp3'}]}
@@ -583,9 +580,6 @@ class RandomBot(BasicBot):
     # TODO: random_num num1 num2
     # TODO: random_fact
     # TODO: random_shrek
-    # TODO: check_movie movie
-    # TODO: check_marvel_character
-    # TODO: check_marvel_film # https://developer.marvel.com/docs
 
 
 class DonkeyBot(MusicBot, RandomBot):
@@ -594,6 +588,9 @@ class DonkeyBot(MusicBot, RandomBot):
 
     # TODO: check_eng_word
     # TODO: weather where
+    # TODO: check_movie movie
+    # TODO: check_marvel_character
+    # TODO: check_marvel_film # https://developer.marvel.com/docs
 
 
 bot = DonkeyBot()
@@ -687,8 +684,6 @@ async def test_random_command(interaction: discord.Interaction):
 # TODO: sprawdź type hinty
 # TODO: poczytaj o API
 # TODO: podział na dwa różne boty
-# TODO: wyszukiwanie po yt gdy nie podano url
 # TODO: testy MusicBota
 # TODO: testy drugiego bota
 # TODO: wyłączenie self.if_looped w trakcie grania i próba puszczenia przez /play
-# TODO: sprawdz search query w /loop i /play, refactor
