@@ -135,7 +135,7 @@ class MusicBot(BasicBot):
             await interaction.response.send_message(
                 "`You are not in a voice channel.`")
 
-    async def play(self, interaction: discord.Interaction, url: Union[str, None],
+    async def play(self, interaction: discord.Interaction, url_or_search_query: Union[str, None],
                    if_play_next_in_queue=False) -> None:
         self.if_queue_was_stopped = False
         # VoiceClient associated with the specified guild (there is one bot per server)
@@ -149,11 +149,21 @@ class MusicBot(BasicBot):
             return None
 
         # If if_play_next_in_queue is True, that means the url was already validated
-        if url and not if_play_next_in_queue:
-            is_url_valid, problem_msg = self.is_url_valid(url)
-            if not is_url_valid and problem_msg:
-                await self.respond_or_followup(interaction, problem_msg)
-                return None
+        url = None
+        if url_or_search_query and not if_play_next_in_queue:
+            is_url_valid, _ = self.is_url_valid(url_or_search_query)
+            if not is_url_valid:
+                search_query = url_or_search_query
+                url = self.get_url_from_search_query(search_query)
+                if not url:
+                    await self.respond_or_followup(
+                        interaction,
+                        f"`Passed search query: \n{search_query}\ncouldn't be found`")
+                    return None
+            else:
+                url = url_or_search_query
+        else:
+            url = url_or_search_query
 
         if bots_voice and bots_voice.is_paused():
             self.url_queue.push(url)
@@ -204,6 +214,21 @@ class MusicBot(BasicBot):
             await interaction.response.send_message(message)
         except discord.errors.InteractionResponded:
             await interaction.followup.send(message)
+
+    def get_url_from_search_query(self, search_query: str) -> Union[str, None]:
+        ydl_opts = {
+            'quiet': True,
+            'extract_flat': True,
+        }
+
+        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+            # Search for videos matching the query and get the URL of the first result
+            search_results = ydl.extract_info(f'ytsearch:{search_query}', download=False)
+            if 'entries' in search_results and len(search_results['entries']) > 0:
+                video_url = search_results['entries'][0]['url']
+                return video_url
+            else:
+                return None
 
     def is_url_valid(self, url: str) -> Tuple[bool, Union[str, None]]:
         # Returns bool indicating if url is valid and the massage about
@@ -341,13 +366,23 @@ class MusicBot(BasicBot):
             await interaction.response.send_message(
                 f"`There was a problem with playing {path_to_audio} audio file`")
 
-    async def loop_audio(self, interaction: discord.Interaction, url: str) -> None:
+    async def loop_audio(self, interaction: discord.Interaction, url_or_search_query: str) -> None:
         self.if_looped = True
 
-        is_url_valid, problem_msg = self.is_url_valid(url)
-        if not is_url_valid and problem_msg:
-            await interaction.response.send_message(problem_msg)
+        url = None
+        is_url_valid, _ = self.is_url_valid(url_or_search_query)
+        if not is_url_valid:
+            search_query = url_or_search_query
+            url = self.get_url_from_search_query(search_query)
+            if url:
+                await self.loop_audio(interaction, url)
+            else:
+                await interaction.response.send_message(
+                    interaction,
+                    f"`Passed search query: \n{search_query}\ncouldn't be found`")
             return None
+        else:
+            url = url_or_search_query
 
         bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
         if_bot_has_channel = await self.has_bot_joined_channel(interaction, bots_voice)
@@ -558,15 +593,15 @@ async def join_command(interaction: discord.Interaction):
 
 
 @bot.tree.command(name="play", description="Play some audio in the channel")
-@discord.app_commands.describe(url="the link to the audio/video")
-async def play_command(interaciton: discord.Interaction, url: str):
-    await bot.play(interaciton, url)
+@discord.app_commands.describe(url_or_search_query="the link to the audio/video or yt search query")
+async def play_command(interaciton: discord.Interaction, url_or_search_query: str):
+    await bot.play(interaciton, url_or_search_query)
 
 
 @bot.tree.command(name="loop", description="Loop the audio")
-@discord.app_commands.describe(url="the link to the audio/video")
-async def loop_coomand(interaction: discord.Interaction, url: str):
-    await bot.loop_audio(interaction, url)
+@discord.app_commands.describe(url_or_search_query="the link to the audio/video or search query")
+async def loop_coomand(interaction: discord.Interaction, url_or_search_query: str):
+    await bot.loop_audio(interaction, url_or_search_query)
 
 
 @bot.tree.command(name="end_loop", description="End the loop")
@@ -639,3 +674,8 @@ async def test_random_command(interaction: discord.Interaction):
 # TODO: sprawdź type hinty
 # TODO: poczytaj o API
 # TODO: podział na dwa różne boty
+# TODO: wyszukiwanie po yt gdy nie podano url
+# TODO: testy MusicBota
+# TODO: testy drugiego bota
+# TODO: wyłączenie self.if_looped w trakcie grania i próba puszczenia przez /play
+# TODO: sprawdz search query w /loop i /play
