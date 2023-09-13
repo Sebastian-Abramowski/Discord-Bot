@@ -397,11 +397,11 @@ class MusicBot(BasicBot):
 
     async def handle_loop_audio_request(self, interaction: discord.Interaction,
                                         url: Union[str, None], search_query: str) -> None:
+        self.if_looped = False
         if url:
             await self.loop_audio(interaction, url)
         else:
             await interaction.response.send_message(
-                interaction,
                 f"`Passed search query: \n{search_query}\ncouldn't be found`")
 
     async def play_audio_in_loop(self, interaction: discord.Interaction,
