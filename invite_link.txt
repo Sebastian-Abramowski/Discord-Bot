@@ -1,1 +1,4 @@
-https://discord.com/api/oauth2/authorize?client_id=1149714426715439145&permissions=41766413137984&scope=applications.commands%20bot
+For DonkeyMusicBot
+https://discord.com/api/oauth2/authorize?client_id=1151572540075032586&permissions=35461400849472&scope=bot%20applications.commands
+For DonkeySecondaryBot
+https://discord.com/api/oauth2/authorize?client_id=1151580275478896670&permissions=277092756544&scope=bot%20applications.commands

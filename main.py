@@ -1,8 +1,8 @@
 import dotenv
 import os
-from bot import bot
+import music_bot
 
 
 if __name__ == '__main__':
     dotenv.load_dotenv()
-    bot.run(os.getenv('TOKEN'))
+    music_bot.bot.run(os.getenv('DONKEY_MUSIC_BOT_TOKEN'))

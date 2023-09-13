@@ -1,81 +1,15 @@
 import discord
-from discord.ext import commands
 import yt_dlp as youtube_dl
 import asyncio
 import validations
 from audio_queue import AudioQueue
 from typing import Union, Tuple
+from basic_bot import BasicBot
 
 FFMPEG_OPTIONS = {
     "before_options": "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5",
     "options": "-vn"
 }
-
-
-# commands.Bot is a subclass of discord.Client
-class BasicBot(commands.Bot):
-    def __init__(self):
-        super().__init__(command_prefix='.', intents=discord.Intents.all())
-
-    async def on_ready(self) -> None:
-        print(f"[BOT-INFO] {self.user} is now running")
-
-        await self.sync_commands_with_error_handling()
-
-    async def sync_commands_with_error_handling(self) -> None:
-        try:
-            synced = await self.tree.sync()
-            print(f"[BOT-INFO] Synced {len(synced)} command(s)")
-        except Exception as e:
-            print(e)
-
-    async def on_message(self, message: discord.Message) -> None:
-        if message.author == self.user:
-            return None
-
-        self.print_message_info(message)
-
-        for mentioned_member in message.mentions:
-            if mentioned_member.name == "DonkeyBot" and mentioned_member.bot is True:
-                await self.handle_reply_when_mentioned(message)
-
-    def print_message_info(self, message: discord.Message) -> None:
-        username = str(message.author)
-        user_message = str(message.content)
-        channel = str(message.channel)
-        print(f"[USER-INFO] {username} said '{user_message}' on channel {channel}")
-
-    async def handle_reply_when_mentioned(self, message: discord.Message) -> None:
-        if "?" == message.content[-1]:
-            await message.reply("I invoke my right not to answer this question")
-        else:
-            await message.reply("Who asked?")
-
-    async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState,
-                                    after: discord.VoiceState) -> None:
-        if self.voice_clients:
-            bots_voice = discord.utils.get(self.voice_clients, guild=member.guild)
-            if bots_voice:
-                await self.disconnect_with_reset_when_bot_alone(bots_voice, before, after)
-
-    async def disconnect_with_reset_when_bot_alone(self, bots_voice: discord.VoiceClient,
-                                                   before: discord.VoiceState,
-                                                   after: discord.VoiceState) -> None:
-        if_bots_channel_changed = (before.channel == bots_voice.channel or
-                                   after.channel == bots_voice.channel)
-        if if_bots_channel_changed:
-            num_of_members = len(bots_voice.channel.members)
-            if num_of_members == 1:
-                print("[BOT] The bot left the empty channel")
-                await bots_voice.disconnect()
-                self.reset_attributes()
-
-    def reset_attributes(self) -> None:
-        info = ("[POTENCIAL-PROBLEM] If your bot have some additional "
-                "attributes that you want to reset "
-                "after disconnecting the bot, then you should "
-                "overwrite 'reset_attributes' method...")
-        print(info)
 
 
 class MusicBot(BasicBot):
@@ -86,6 +20,12 @@ class MusicBot(BasicBot):
         self.if_queue_was_stopped = False
         self.if_skipped = False
         self.url_queue = AudioQueue()
+
+    async def on_ready(self) -> None:
+        await super().on_ready()
+        await self.change_presence(status=discord.Status.online,
+                                   activity=discord.Activity(
+                                       type=discord.ActivityType.listening, name="/play"))
 
     async def join(self, interaction: discord.Interaction, without_response=False) -> None:
         if interaction.user.voice:
@@ -284,7 +224,7 @@ class MusicBot(BasicBot):
             bots_voice.play(source)
 
             while bots_voice.is_playing() or bots_voice.is_paused():
-                await asyncio.sleep(1)
+                await asyncio.sleep(0.2)
 
             if self.if_skipped:
                 await self.respond_or_followup(interaction, "`Last song was skipped`")
@@ -319,7 +259,7 @@ class MusicBot(BasicBot):
                 await self.play(interaction, url_or_search_query=None)
             else:
                 await interaction.response.send_message(
-                    "'The skip command was executed, but nothing is currently playing'")
+                    "`The skip command was executed, but nothing is currently playing`")
         else:
             await interaction.response.send_message(
                 "`Skip command was executed, but the audio queue is empty`")
@@ -427,7 +367,7 @@ class MusicBot(BasicBot):
                 return None
 
             while bots_voice.is_playing():
-                await asyncio.sleep(1)
+                await asyncio.sleep(0.2)
 
             # If voice (VoiceClient) was stopped during asyncio.sleep, another voice.stop(),
             # even though the voice has been already stopped, won't do anything
@@ -447,6 +387,14 @@ class MusicBot(BasicBot):
     async def end_loop(self, interaction: discord.Interaction) -> None:
         self.if_looped = False
         await interaction.response.send_message("`Looping has been stopped`")
+
+    async def end_loop_now(self, interaction: discord.Interaction) -> None:
+        bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
+
+        if bots_voice and bots_voice.is_connected():
+            await self.stop_bot_playing(interaction, bots_voice, without_response=True)
+            self.if_queue_was_stopped = False
+            await interaction.response.send_message("`The looping has been stopped immediately`")
 
     async def pause(self, interaction: discord.Interaction) -> None:
         bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
@@ -567,33 +515,7 @@ class MusicBot(BasicBot):
                 "`The bot is not currently on any channel`")
 
 
-class RandomBot(BasicBot):
-    def __init__(self):
-        super().__init__()
-
-    async def test_random(self, interaction: discord.Interaction) -> None:
-        print(self.voice_clients)
-        await interaction.response.send_message("TESTING RANDOM CLASS")
-
-    # TODO: flip_coin
-    # TODO: random_joke
-    # TODO: random_num num1 num2
-    # TODO: random_fact
-    # TODO: random_shrek
-
-
-class DonkeyBot(MusicBot, RandomBot):
-    def __init__(self):
-        super().__init__()
-
-    # TODO: check_eng_word
-    # TODO: weather where
-    # TODO: check_movie movie
-    # TODO: check_marvel_character
-    # TODO: check_marvel_film # https://developer.marvel.com/docs
-
-
-bot = DonkeyBot()
+bot = MusicBot()
 
 
 # Configurate slash commands
@@ -602,7 +524,7 @@ async def join_command(interaction: discord.Interaction):
     await bot.join(interaction)
 
 
-@bot.tree.command(name="play", description="Play some audio in the channel")
+@bot.tree.command(name="play", description="Play some audio in the channel or add to the queue")
 @discord.app_commands.describe(url_or_search_query="the link to the audio/video or yt search query")
 async def play_command(interaciton: discord.Interaction, url_or_search_query: str):
     await bot.play(interaciton, url_or_search_query)
@@ -614,9 +536,14 @@ async def loop_coomand(interaction: discord.Interaction, url_or_search_query: st
     await bot.loop_audio(interaction, url_or_search_query)
 
 
-@bot.tree.command(name="end_loop", description="End the loop")
+@bot.tree.command(name="end_loop", description="End the loop, but keep the audio playing till the end")
 async def end_loop_command(interaction: discord.Interaction):
     await bot.end_loop(interaction)
+
+
+@bot.tree.command(name="end_loop_now", description="End the loop now")
+async def end_loop_now_command(interaction: discord.Interaction):
+    await bot.end_loop_now(interaction)
 
 
 @bot.tree.command(name="pause", description="Pause the bot's currently playing audio")
@@ -673,17 +600,3 @@ async def skip_command(interaction: discord.Interaction):
 @bot.tree.command(name="play_sui", description="Play sui")
 async def play_sui_command(interaction: discord.Interaction):
     await bot.play_sui(interaction)
-
-
-@bot.tree.command(name="test_random", description="TESTING")
-async def test_random_command(interaction: discord.Interaction):
-    await bot.test_random(interaction)
-
-
-# TODO: hosting
-# TODO: sprawdź type hinty
-# TODO: poczytaj o API
-# TODO: podział na dwa różne boty
-# TODO: testy MusicBota
-# TODO: testy drugiego bota
-# TODO: wyłączenie self.if_looped w trakcie grania i próba puszczenia przez /play
