@@ -148,22 +148,16 @@ class MusicBot(BasicBot):
                 interaction, msg)
             return None
 
-        # If if_play_next_in_queue is True, that means the url was already validated
-        url = None
-        if url_or_search_query and not if_play_next_in_queue:
-            is_url_valid, _ = self.is_url_valid(url_or_search_query)
-            if not is_url_valid:
-                search_query = url_or_search_query
-                url = self.get_url_from_search_query(search_query)
-                if not url:
-                    await self.respond_or_followup(
-                        interaction,
-                        f"`Passed search query: \n{search_query}\ncouldn't be found`")
-                    return None
-            else:
-                url = url_or_search_query
+        old_url_or_search_query = url_or_search_query
+        if url_or_search_query:
+            url = self.get_validated_url(url_or_search_query, if_play_next_in_queue)
+            if not url:
+                await self.respond_or_followup(
+                    interaction,
+                    f"`Passed search query: \n{old_url_or_search_query}\ncouldn't be found`")
+                return None
         else:
-            url = url_or_search_query
+            url = None
 
         if bots_voice and bots_voice.is_paused():
             self.url_queue.push(url)
@@ -173,7 +167,6 @@ class MusicBot(BasicBot):
             await self.respond_or_followup(interaction, msg)
             return None
 
-        bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
         if_bot_has_channel = await self.has_bot_joined_channel(interaction, bots_voice)
         if not if_bot_has_channel:
             await self.respond_or_followup(interaction, "`The user is not connected to any channel`")
@@ -214,6 +207,22 @@ class MusicBot(BasicBot):
             await interaction.response.send_message(message)
         except discord.errors.InteractionResponded:
             await interaction.followup.send(message)
+
+    def get_validated_url(self, url_or_search_query: str,
+                          if_play_next_in_queue: bool) -> Union[str, None]:
+        url = None
+        if url_or_search_query and not if_play_next_in_queue:
+            is_url_valid, _ = self.is_url_valid(url_or_search_query)
+            if not is_url_valid:
+                search_query = url_or_search_query
+                url = self.get_url_from_search_query(search_query)
+                return url
+            else:
+                url = url_or_search_query
+                return url
+        else:
+            url = url_or_search_query
+            return url
 
     def get_url_from_search_query(self, search_query: str) -> Union[str, None]:
         ydl_opts = {
@@ -310,7 +319,7 @@ class MusicBot(BasicBot):
             if bots_voice.is_playing():
                 await self.stop(interaction, without_response=True)
                 self.if_skipped = True
-                await self.play(interaction, url=None)
+                await self.play(interaction, url_or_search_query=None)
             else:
                 await interaction.response.send_message(
                     "'The skip command was executed, but nothing is currently playing'")
@@ -374,12 +383,7 @@ class MusicBot(BasicBot):
         if not is_url_valid:
             search_query = url_or_search_query
             url = self.get_url_from_search_query(search_query)
-            if url:
-                await self.loop_audio(interaction, url)
-            else:
-                await interaction.response.send_message(
-                    interaction,
-                    f"`Passed search query: \n{search_query}\ncouldn't be found`")
+            await self.handle_loop_audio_request(interaction, url, search_query)
             return None
         else:
             url = url_or_search_query
@@ -393,6 +397,15 @@ class MusicBot(BasicBot):
 
         if bots_voice and bots_voice.is_connected():
             await self.play_audio_in_loop(interaction, bots_voice, url)
+
+    async def handle_loop_audio_request(self, interaction: discord.Interaction,
+                                        url: Union[str, None], search_query: str) -> None:
+        if url:
+            await self.loop_audio(interaction, url)
+        else:
+            await interaction.response.send_message(
+                interaction,
+                f"`Passed search query: \n{search_query}\ncouldn't be found`")
 
     async def play_audio_in_loop(self, interaction: discord.Interaction,
                                  bots_voice: discord.VoiceClient, url: str) -> None:
@@ -678,4 +691,4 @@ async def test_random_command(interaction: discord.Interaction):
 # TODO: testy MusicBota
 # TODO: testy drugiego bota
 # TODO: wyłączenie self.if_looped w trakcie grania i próba puszczenia przez /play
-# TODO: sprawdz search query w /loop i /play
+# TODO: sprawdz search query w /loop i /play, refactor
