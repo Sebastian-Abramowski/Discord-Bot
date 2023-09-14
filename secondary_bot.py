@@ -4,7 +4,7 @@ import requests
 import dotenv
 import os
 from basic_bot import BasicBot
-from typing import Union
+from typing import Union, Tuple
 
 dotenv.load_dotenv()
 
@@ -33,7 +33,7 @@ class RandomBot(BasicBot):
         if joke:
             await interaction.response.send_message(joke)
         else:
-            await interaction.response.send_message("`There was a problem with getting a joke`")
+            await interaction.response.send_message("`There was a problem with getting a random joke`")
 
     def get_random_joke(self) -> Union[str, None]:
         url_to_repo = os.getenv("URL_TO_MY_REPO")
@@ -56,26 +56,77 @@ class RandomBot(BasicBot):
         if fact:
             await interaction.response.send_message(fact)
         else:
-            await interaction.response.send_message("`There was a problem with getting a fact`")
+            await interaction.response.send_message("`There was a problem with getting a random fact`")
 
     def get_random_fact(self) -> Union[str, None]:
-        api_ninjas_api_key = os.getenv("API_NINJAS_API_KEY")
-        headers = {
-            "X-Api-Key": api_ninjas_api_key,
-        }
-        payload = {
-            "limit": 1,
-        }
+        headers, payload = self.get_headers_and_params_for_api_ninjas()
         try:
             response = requests.get("https://api.api-ninjas.com/v1/facts", params=payload,
                                     headers=headers, timeout=5)
         except Exception as e:
             print("[FECTHING-RANDOM-FACT-ERROR] " + str(e))
             return None
+        if response.status_code != 200:
+            return None
         return response.json()[0]['fact']
 
-    # TODO: random_cat_image https://developers.thecatapi.com/view-account/ylX4blBYT9FaoVd6OhvR?report=bOoHBz-8t   # noqa: E501
-    # TODO: get riddle https://api-ninjas.com/api/riddles
+    def get_headers_and_params_for_api_ninjas(self) -> Tuple[dict[str, str], dict[str, int]]:
+        api_ninjas_api_key = os.getenv("API_NINJAS_API_KEY")
+        headers = {
+            "X-Api-Key": api_ninjas_api_key,
+        }
+        params = {
+            "limit": 1,
+        }
+        return headers, params
+
+    async def random_riddle(self, interaction: discord.Interaction) -> None:
+        riddle = self.get_random_riddle()
+        if riddle:
+            await interaction.response.send_message(riddle)
+        else:
+            await interaction.response.send_message("`There was a problem with getting a random riddle`")
+
+    def get_random_riddle(self) -> Union[str, None]:
+        headers, payload = self.get_headers_and_params_for_api_ninjas()
+        try:
+            response = requests.get("https://api.api-ninjas.com/v1/riddles", params=payload,
+                                    headers=headers, timeout=5)
+        except Exception as e:
+            print("[FECTHING-RANDOM-RIDDLE-ERROR] " + str(e))
+            return None
+        if response.status_code != 200:
+            return None
+        riddle = response.json()[0]
+        title = riddle["title"]
+        question = riddle["question"]
+        answer = riddle["answer"]
+        riddle_to_return = f"{title}:\n{question}\nSee answer: ||{answer}||"
+        return riddle_to_return
+
+    async def random_cat_image(self, interaction: discord.Interaction) -> None:
+        cat_img_url = self.get_random_cat_image()
+        if cat_img_url:
+            await interaction.response.send_message(cat_img_url)
+        else:
+            await interaction.response.send_message(
+                "`There was a problem with getting a random cat image`")
+
+    def get_random_cat_image(self) -> Union[str, None]:
+        # It returns url to an image (str) or None
+        thecatapi_api_key = os.getenv("THECATAPI_API_KEY")
+        headers = {
+            "x-api-key": thecatapi_api_key,
+        }
+        try:
+            response = requests.get("https://api.thecatapi.com/v1/images/search?limit=1",
+                                    headers=headers, timeout=5)
+        except Exception as e:
+            print("[FECTHING-RANDOM-CAT-IMAGE-ERROR] " + str(e))
+            return None
+        if response.status_code != 200:
+            return None
+        return response.json()[0]["url"]
 
 
 class DonkeySecondaryBot(RandomBot):
@@ -91,6 +142,7 @@ class DonkeySecondaryBot(RandomBot):
 # TODO: hosting
 # TODO: sprawdź type hinty
 # TODO: testy drugiego bota
+# TODO: README zaktualizuj environmental variables
 
 
 bot = DonkeySecondaryBot()
@@ -116,3 +168,13 @@ async def random_joke_command(interaction: discord.Interaction):
 @bot.tree.command(name="random_fact", description="Get random fact")
 async def random_fact_command(interaction: discord.Interaction):
     await bot.random_fact(interaction)
+
+
+@bot.tree.command(name="random_riddle", description="Get random riddle")
+async def random_riddle_command(interaction: discord.Interaction):
+    await bot.random_riddle(interaction)
+
+
+@bot.tree.command(name="random_cat_image", description="Get random cat image")
+async def random_cat_image_command(interaction: discord.Interaction):
+    await bot.random_cat_image(interaction)
