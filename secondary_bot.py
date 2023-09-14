@@ -133,9 +133,49 @@ class DonkeySecondaryBot(RandomBot):
     def __init__(self):
         super().__init__()
 
-    # TODO: check_eng_word https://www.wordsapi.com/
+    async def check_movie(self, interaction: discord.Interaction, title: str) -> None:
+        movie_info, poster_image_url = self.get_movie_by_title(title)
+        if movie_info:
+            embed = discord.Embed(color=discord.Color.blue())
+            embed.set_image(url=poster_image_url)
+
+            await interaction.response.send_message(movie_info, embed=embed)
+        else:
+            await interaction.response.send_message("`There was a problem with getting the movie info`")
+
+    def get_movie_by_title(self, title: str) -> Union[Tuple[str, str], Tuple[None, None]]:
+        # Returns movie info and url to the image of the poster or None, None
+        omdbapi_api_key = os.getenv("OMDB_API_API_KEY")
+        params = {
+            "t": title
+        }
+        try:
+            response = requests.get(f"http://www.omdbapi.com/?apikey={omdbapi_api_key}&",
+                                    params=params)
+        except Exception as e:
+            print("[FECTHING-MOVIE-ERROR] " + str(e))
+            return None, None
+        response = response.json()
+
+        if response["Response"] == "False":
+            return None, None
+
+        title = response["Title"]
+        year = response["Year"]
+        released_date = response["Released"]
+        plot_summary = response["Plot"]
+        poster_image_url = response["Poster"]
+        runtime = response["Runtime"]
+        actors = response["Actors"]
+        imdb_rating = response["imdbRating"]
+
+        result = (f"_**{title}**_\n\n_Released date_: {released_date}\n_Year_: {year}\n"
+                  f"_Runtime_: {runtime}\n_Actors_: {actors}\n"
+                  f"_IMDB rating_: **{imdb_rating}**/10\n_Plot_: {plot_summary}\n")
+        return result, poster_image_url
+
+    # TODO: check_eng_word https://www.wordsapi.com/ trzeba inny bo potrzebna karta
     # TODO: weather where https://openweathermap.org/weathermap?basemap=map&cities=true&layer=temperature&lat=52.7438&lon=20.9578&zoom=10 # noqa: E501
-    # TODO: check_movie movie https://www.omdbapi.com/
     # TODO: check_marvel_character
     # TODO: check_marvel_film # https://developer.marvel.com/docs
 
@@ -178,3 +218,9 @@ async def random_riddle_command(interaction: discord.Interaction):
 @bot.tree.command(name="random_cat_image", description="Get random cat image")
 async def random_cat_image_command(interaction: discord.Interaction):
     await bot.random_cat_image(interaction)
+
+
+@bot.tree.command(name="check_movie", description="Check movie/series info by title")
+@discord.app_commands.describe(title="Title of the movie/series")
+async def check_movie_command(interaction: discord.Interaction, title: str):
+    await bot.check_movie(interaction, title)
