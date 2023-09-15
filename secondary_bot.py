@@ -223,19 +223,26 @@ class DonkeySecondaryBot(RandomBot):
     async def check_marvel_character(self, interaction: discord.Interaction, name: str) -> None:
         marvel_character = self.get_marvel_character(name)
         if not marvel_character:
-            await interaction.response.send_message(
+            await self.respond_or_followup(
+                interaction,
                 f"`There was a problem with fetching information about {name}`")
             return None
 
         if marvel_character.num_of_matching_characters == 0:
             if marvel_character.partly_maching_names:
+                if len(marvel_character.partly_maching_names) == 1:
+                    await interaction.response.defer(thinking=True)
+                    proper_name = marvel_character.partly_maching_names[0]
+                    await self.check_marvel_character(interaction, proper_name)
+                    return None
                 names = ", ".join(marvel_character.partly_maching_names)
                 msg = ("You need to be more specific. These are "
                        f"similar names of characters in our data: {names}")
-                await interaction.response.send_message(msg)
+                await self.respond_or_followup(interaction, msg)
                 return None
             else:
-                await interaction.response.send_message(
+                await self.respond_or_followup(
+                    interaction,
                     f"No marvel character with name of: '{name}' found")
                 return None
 
@@ -243,11 +250,14 @@ class DonkeySecondaryBot(RandomBot):
             embed = discord.Embed(color=discord.Color.red(), title=marvel_character.name)
             embed.set_image(url=marvel_character.image_url)
             embed.add_field(name="Description", value=marvel_character.description, inline=False)
-            embed.add_field(name="Appeared/mentioned in:", value=f"{marvel_character.num_of_comics} comics")
-            await interaction.response.send_message(embed=embed)
+            embed.add_field(name="Appeared/mentioned in:",
+                            value=f"{marvel_character.num_of_comics} comics")
+            await self.respond_or_followup(interaction, message=None, embed=embed)
         except Exception as e:
             print(e)
-            await interaction.response.send_message(f"There was a problem with showing infrormation about {name}")
+            await self.respond_or_followup(
+                interaction,
+                f"There was a problem with showing infrormation about {name}")
 
     def get_marvel_character(self, name: str) -> Union[MarvelCharacter, None]:
         marvel_api_public_key = os.getenv("MARVEL_API_PUBLIC_KEY")
@@ -320,6 +330,17 @@ class DonkeySecondaryBot(RandomBot):
         character.num_of_comics = num_of_comics
         return character
 
+    async def respond_or_followup(self, interaction: discord.Interaction, message: str,
+                                  embed: discord.Embed = None) -> None:
+        try:
+            if not interaction.is_expired():
+                await interaction.response.send_message(message, embed=embed)
+        except discord.errors.InteractionResponded:
+            if not interaction.is_expired():
+                await interaction.followup.send(message, embed=embed)
+        except Exception as e:
+            print(e)
+
     # TODO: check_eng_word https://www.wordsapi.com/ trzeba inny bo potrzebna karta
     # TODO: weather where https://openweathermap.org/weathermap?basemap=map&cities=true&layer=temperature&lat=52.7438&lon=20.9578&zoom=10 # noqa: E501
     # TODO: check_marvel_character
@@ -330,7 +351,7 @@ class DonkeySecondaryBot(RandomBot):
 # TODO: testy drugiego bota
 # TODO: README zaktualizuj environmental variables
 
-# TODO: dokończ get_marvel_character_info + refactor
+# TODO: get_marvel_character_info + refactor
 
 
 bot = DonkeySecondaryBot()
