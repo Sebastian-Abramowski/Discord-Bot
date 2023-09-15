@@ -6,7 +6,7 @@ import os
 import time
 import hashlib
 from basic_bot import BasicBot
-from typing import Union, Tuple, NamedTuple
+from typing import Union, Tuple
 
 dotenv.load_dotenv()
 
@@ -33,7 +33,9 @@ class RandomBot(BasicBot):
     async def random_joke(self, interaction: discord.Interaction) -> None:
         joke = self.get_random_joke()
         if joke:
-            await interaction.response.send_message(joke)
+            embed = discord.Embed(color=discord.Color.orange())
+            embed.add_field(name="", value=joke)
+            await interaction.response.send_message(embed=embed)
         else:
             await interaction.response.send_message("`There was a problem with getting a random joke`")
 
@@ -44,7 +46,7 @@ class RandomBot(BasicBot):
             "Accept": "application/json",
         }
         try:
-            response = requests.get("https://icanhazdadjoke.com/", headers=headers, timeout=5)
+            response = requests.get("https://icanhazdadjoke.com/", headers=headers, timeout=3)
         except Exception as e:
             print("[FECTHING-RANDOM-JOKE-ERROR] " + str(e))
             return None
@@ -56,7 +58,9 @@ class RandomBot(BasicBot):
     async def random_fact(self, interaction: discord.Interaction) -> None:
         fact = self.get_random_fact()
         if fact:
-            await interaction.response.send_message(fact)
+            embed = discord.Embed(color=discord.Color.purple())
+            embed.add_field(name="", value=fact)
+            await interaction.response.send_message(embed=embed)
         else:
             await interaction.response.send_message("`There was a problem with getting a random fact`")
 
@@ -64,7 +68,7 @@ class RandomBot(BasicBot):
         headers, payload = self.get_headers_and_params_for_api_ninjas()
         try:
             response = requests.get("https://api.api-ninjas.com/v1/facts", params=payload,
-                                    headers=headers, timeout=5)
+                                    headers=headers, timeout=3)
         except Exception as e:
             print("[FECTHING-RANDOM-FACT-ERROR] " + str(e))
             return None
@@ -83,28 +87,39 @@ class RandomBot(BasicBot):
         return headers, params
 
     async def random_riddle(self, interaction: discord.Interaction) -> None:
-        riddle = self.get_random_riddle()
-        if riddle:
-            await interaction.response.send_message(riddle)
+        embed_with_riddle = self.get_embed_with_random_riddle()
+        if embed_with_riddle:
+            await interaction.response.send_message(embed=embed_with_riddle)
         else:
             await interaction.response.send_message("`There was a problem with getting a random riddle`")
 
-    def get_random_riddle(self) -> Union[str, None]:
+    def get_embed_with_random_riddle(self) -> Union[discord.Embed, None]:
+        riddle_dict = self.get_dict_with_random_riddle()
+
+        if not riddle_dict:
+            return None
+
+        title = riddle_dict["title"]
+        question = riddle_dict["question"]
+        answer = riddle_dict["answer"]
+
+        embed = discord.Embed(color=discord.Color.pink(), title=title, description=question)
+        embed.add_field(name="See answer: ", value=f"||{answer}||")
+        return embed
+
+    def get_dict_with_random_riddle(self) -> Union[dict[str, str], None]:
         headers, payload = self.get_headers_and_params_for_api_ninjas()
         try:
             response = requests.get("https://api.api-ninjas.com/v1/riddles", params=payload,
-                                    headers=headers, timeout=5)
+                                    headers=headers, timeout=3)
         except Exception as e:
             print("[FECTHING-RANDOM-RIDDLE-ERROR] " + str(e))
             return None
         if response.status_code != 200:
             return None
         riddle = response.json()[0]
-        title = riddle["title"]
-        question = riddle["question"]
-        answer = riddle["answer"]
-        riddle_to_return = f"{title}:\n{question}\nSee answer: ||{answer}||"
-        return riddle_to_return
+
+        return riddle
 
     async def random_cat_image(self, interaction: discord.Interaction) -> None:
         cat_img_url = self.get_random_cat_image()
@@ -122,13 +137,29 @@ class RandomBot(BasicBot):
         }
         try:
             response = requests.get("https://api.thecatapi.com/v1/images/search?limit=1",
-                                    headers=headers, timeout=5)
+                                    headers=headers, timeout=3)
         except Exception as e:
             print("[FECTHING-RANDOM-CAT-IMAGE-ERROR] " + str(e))
             return None
         if response.status_code != 200:
             return None
         return response.json()[0]["url"]
+
+
+class MarvelCharacter():
+    def __init__(self):
+        self.name = None
+        self.description = None
+        self.image_url = None
+        self.num_of_comics = None
+        self.num_of_matching_characters = None  # either 0 or 1 (limit=1)
+        self.partly_maching_names = None
+
+    def __str__(self):
+        list_of_attributes = [self.name, self.description, self.image_url,
+                              self.num_of_comics, self.num_of_matching_characters,
+                              self.partly_maching_names]
+        return "\n".join([str(attr) for attr in list_of_attributes])
 
 
 class DonkeySecondaryBot(RandomBot):
@@ -189,8 +220,36 @@ class DonkeySecondaryBot(RandomBot):
 
         return response
 
-    def get_marvel_character_info(self, name: str) -> Union[str, None]:
-        # TODO: dokończ
+    async def check_marvel_character(self, interaction: discord.Interaction, name: str) -> None:
+        marvel_character = self.get_marvel_character(name)
+        if not marvel_character:
+            await interaction.response.send_message(
+                f"`There was a problem with fetching information about {name}`")
+            return None
+
+        if marvel_character.num_of_matching_characters == 0:
+            if marvel_character.partly_maching_names:
+                names = ", ".join(marvel_character.partly_maching_names)
+                msg = ("You need to be more specific. These are "
+                       f"similar names of characters in our data: {names}")
+                await interaction.response.send_message(msg)
+                return None
+            else:
+                await interaction.response.send_message(
+                    f"No marvel character with name of: '{name}' found")
+                return None
+
+        try:
+            embed = discord.Embed(color=discord.Color.red(), title=marvel_character.name)
+            embed.set_image(url=marvel_character.image_url)
+            embed.add_field(name="Description", value=marvel_character.description, inline=False)
+            embed.add_field(name="Appeared/mentioned in:", value=f"{marvel_character.num_of_comics} comics")
+            await interaction.response.send_message(embed=embed)
+        except Exception as e:
+            print(e)
+            await interaction.response.send_message(f"There was a problem with showing infrormation about {name}")
+
+    def get_marvel_character(self, name: str) -> Union[MarvelCharacter, None]:
         marvel_api_public_key = os.getenv("MARVEL_API_PUBLIC_KEY")
         marvel_api_private_key = os.getenv("MARVEL_API_PRIVATE_KEY")
         ts = str(time.time())
@@ -208,7 +267,7 @@ class DonkeySecondaryBot(RandomBot):
 
         try:
             response = requests.get("http://gateway.marvel.com/v1/public/characters",
-                                    params=params, timeout=5)
+                                    params=params, timeout=3)
         except Exception as e:
             print(e)
             return None
@@ -217,7 +276,10 @@ class DonkeySecondaryBot(RandomBot):
         if response['code'] != 200:
             return None
 
+        character = MarvelCharacter()
+
         number_of_results = response["data"]["total"]  # 0 or 1
+        character.num_of_matching_characters = 0
         if number_of_results == 0:
             params = {
                 "nameStartsWith": name,
@@ -228,16 +290,23 @@ class DonkeySecondaryBot(RandomBot):
 
             try:
                 response = requests.get("http://gateway.marvel.com/v1/public/characters",
-                                        params=params, timeout=5)
+                                        params=params, timeout=3)
             except Exception as e:
                 print(e)
                 return None
-            results = response.json()["data"]["results"]
+            response = response.json()
+
+            if response['code'] != 200:
+                return None
+
+            results = response["data"]["results"]
             names = []
             for result_dict in results:
                 names.append(result_dict["name"])
-            print(names)
-            return None
+            character.partly_maching_names = names
+            return character
+
+        character.num_of_matching_characters = 1
 
         result = response["data"]["results"][0]
         char_name = result["name"]
@@ -245,8 +314,11 @@ class DonkeySecondaryBot(RandomBot):
         image = ".".join([result["thumbnail"]["path"], result["thumbnail"]["extension"]])
         num_of_comics = result["comics"]["available"]
 
-
-        print("\n".join([char_name, description, image, str(num_of_comics)]))
+        character.name = char_name
+        character.description = description
+        character.image_url = image
+        character.num_of_comics = num_of_comics
+        return character
 
     # TODO: check_eng_word https://www.wordsapi.com/ trzeba inny bo potrzebna karta
     # TODO: weather where https://openweathermap.org/weathermap?basemap=map&cities=true&layer=temperature&lat=52.7438&lon=20.9578&zoom=10 # noqa: E501
@@ -258,9 +330,6 @@ class DonkeySecondaryBot(RandomBot):
 # TODO: testy drugiego bota
 # TODO: README zaktualizuj environmental variables
 
-# TODO: embed random riddle
-# TODO: embed random joke
-# TODO: embed random fact
 # TODO: dokończ get_marvel_character_info + refactor
 
 
@@ -303,3 +372,9 @@ async def random_cat_image_command(interaction: discord.Interaction):
 @discord.app_commands.describe(title="Title of the movie/series")
 async def check_movie_command(interaction: discord.Interaction, title: str):
     await bot.check_movie(interaction, title)
+
+
+@bot.tree.command(name="check_marvel_character", description="Check marvel character by its name")
+@discord.app_commands.describe(name="Name of character")
+async def check_marvel_character_command(interaction: discord.Interaction, name: str):
+    await bot.check_marvel_character(interaction, name)
