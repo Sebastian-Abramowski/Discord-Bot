@@ -3,8 +3,10 @@ import random
 import requests
 import dotenv
 import os
+import time
+import hashlib
 from basic_bot import BasicBot
-from typing import Union, Tuple
+from typing import Union, Tuple, NamedTuple
 
 dotenv.load_dotenv()
 
@@ -134,16 +136,41 @@ class DonkeySecondaryBot(RandomBot):
         super().__init__()
 
     async def check_movie(self, interaction: discord.Interaction, title: str) -> None:
-        movie_info, poster_image_url = self.get_movie_by_title(title)
-        if movie_info:
-            embed = discord.Embed(color=discord.Color.blue())
-            embed.set_image(url=poster_image_url)
-
-            await interaction.response.send_message(movie_info, embed=embed)
+        embed = self.get_movie_embed_info_by_title(title)
+        if embed:
+            await interaction.response.send_message(embed=embed)
         else:
-            await interaction.response.send_message("`There was a problem with getting the movie info`")
+            await interaction.response.send_message(
+                f"`There was a problem with getting the info of the movie called` **{title}**")
 
-    def get_movie_by_title(self, title: str) -> Union[Tuple[str, str], Tuple[None, None]]:
+    def get_movie_embed_info_by_title(self, title: str) -> Union[discord.Embed, None]:
+        movie_info_dict = self.get_movie_info_by_title(title)
+
+        if not movie_info_dict:
+            return None
+
+        movie_title = movie_info_dict["Title"]
+        year = movie_info_dict["Year"]
+        released_date = movie_info_dict["Released"]
+        plot_summary = movie_info_dict["Plot"]
+        poster_image_url = movie_info_dict["Poster"]
+        runtime = movie_info_dict["Runtime"]
+        actors = movie_info_dict["Actors"]
+        imdb_rating = movie_info_dict["imdbRating"]
+
+        embed = discord.Embed(color=discord.Color.blue(), title=movie_title)
+        embed.set_image(url=poster_image_url)
+        embed.add_field(name="Plot", value=plot_summary, inline=False)
+        embed.add_field(name="Year", value=year)
+        embed.add_field(name="Released date", value=released_date)
+        embed.add_field(name="", value="", inline=False)
+        embed.add_field(name="Runtime", value=runtime)
+        embed.add_field(name="IMDB rating", value=f"{imdb_rating}/10")
+        embed.add_field(name="Actors", value=actors, inline=False)
+
+        return embed
+
+    def get_movie_info_by_title(self, title: str) -> Union[dict[str, str], None]:
         # Returns movie info and url to the image of the poster or None, None
         omdbapi_api_key = os.getenv("OMDB_API_API_KEY")
         params = {
@@ -154,25 +181,72 @@ class DonkeySecondaryBot(RandomBot):
                                     params=params)
         except Exception as e:
             print("[FECTHING-MOVIE-ERROR] " + str(e))
-            return None, None
+            return None
         response = response.json()
 
         if response["Response"] == "False":
-            return None, None
+            return None
 
-        title = response["Title"]
-        year = response["Year"]
-        released_date = response["Released"]
-        plot_summary = response["Plot"]
-        poster_image_url = response["Poster"]
-        runtime = response["Runtime"]
-        actors = response["Actors"]
-        imdb_rating = response["imdbRating"]
+        return response
 
-        result = (f"_**{title}**_\n\n_Released date_: {released_date}\n_Year_: {year}\n"
-                  f"_Runtime_: {runtime}\n_Actors_: {actors}\n"
-                  f"_IMDB rating_: **{imdb_rating}**/10\n_Plot_: {plot_summary}\n")
-        return result, poster_image_url
+    def get_marvel_character_info(self, name: str) -> Union[str, None]:
+        # TODO: dokończ
+        marvel_api_public_key = os.getenv("MARVEL_API_PUBLIC_KEY")
+        marvel_api_private_key = os.getenv("MARVEL_API_PRIVATE_KEY")
+        ts = str(time.time())
+        hash_input = ts + marvel_api_private_key + marvel_api_public_key
+        # Get hexadecimal representation of hashed, in md5 algorithm, value
+        hash_value = hashlib.md5(hash_input.encode()).hexdigest()
+
+        params = {
+            "name": name,
+            "ts": ts,
+            "apikey": marvel_api_public_key,
+            "hash": hash_value,
+            "limit": 1,
+        }
+
+        try:
+            response = requests.get("http://gateway.marvel.com/v1/public/characters",
+                                    params=params, timeout=5)
+        except Exception as e:
+            print(e)
+            return None
+        response = response.json()
+
+        if response['code'] != 200:
+            return None
+
+        number_of_results = response["data"]["total"]  # 0 or 1
+        if number_of_results == 0:
+            params = {
+                "nameStartsWith": name,
+                "ts": ts,
+                "apikey": marvel_api_public_key,
+                "hash": hash_value,
+            }
+
+            try:
+                response = requests.get("http://gateway.marvel.com/v1/public/characters",
+                                        params=params, timeout=5)
+            except Exception as e:
+                print(e)
+                return None
+            results = response.json()["data"]["results"]
+            names = []
+            for result_dict in results:
+                names.append(result_dict["name"])
+            print(names)
+            return None
+
+        result = response["data"]["results"][0]
+        char_name = result["name"]
+        description = result["description"]
+        image = ".".join([result["thumbnail"]["path"], result["thumbnail"]["extension"]])
+        num_of_comics = result["comics"]["available"]
+
+
+        print("\n".join([char_name, description, image, str(num_of_comics)]))
 
     # TODO: check_eng_word https://www.wordsapi.com/ trzeba inny bo potrzebna karta
     # TODO: weather where https://openweathermap.org/weathermap?basemap=map&cities=true&layer=temperature&lat=52.7438&lon=20.9578&zoom=10 # noqa: E501
@@ -183,6 +257,11 @@ class DonkeySecondaryBot(RandomBot):
 # TODO: sprawdź type hinty
 # TODO: testy drugiego bota
 # TODO: README zaktualizuj environmental variables
+
+# TODO: embed random riddle
+# TODO: embed random joke
+# TODO: embed random fact
+# TODO: dokończ get_marvel_character_info + refactor
 
 
 bot = DonkeySecondaryBot()
