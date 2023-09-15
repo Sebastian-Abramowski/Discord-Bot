@@ -81,6 +81,9 @@ class MusicBot(BasicBot):
         # VoiceClient associated with the specified guild (there is one bot per server)
         bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
 
+        if not if_play_next_in_queue:
+            await interaction.response.defer(thinking=True)
+
         if self.if_looped:
             msg = ("`The audio is looped currently. Use '/end_loop' "
                    "or '/stop' if you want it to stop.`")
@@ -127,7 +130,11 @@ class MusicBot(BasicBot):
                 await self.respond_or_followup(interaction, "`Something is already being played`")
                 return None
 
-            await self.respond_or_followup(interaction, f"Currently playing: {url}")
+            embed = await self.get_embed_message(interaction, url, "Currently playing: ")
+            if not embed:
+                await self.respond_or_followup(interaction, f"Currently playing: {url}")
+            else:
+                await self.respond_or_followup(interaction, message=None, embed=embed)
 
             url = self.extract_direct_audio_url(url)
             if not url:
@@ -141,11 +148,16 @@ class MusicBot(BasicBot):
         else:
             await self.respond_or_followup(interaction, "`The bot is not conencted to any channel`")
 
-    async def respond_or_followup(self, interaction: discord.Interaction, message: str) -> None:
+    async def respond_or_followup(self, interaction: discord.Interaction, message: str,
+                                  embed: discord.Embed = None) -> None:
         try:
-            await interaction.response.send_message(message)
+            if not interaction.is_expired():
+                await interaction.response.send_message(message, embed=embed)
         except discord.errors.InteractionResponded:
-            await interaction.followup.send(message)
+            if not interaction.is_expired():
+                await interaction.followup.send(message, embed=embed)
+        except Exception as e:
+            print(e)
 
     def get_validated_url(self, url_or_search_query: str,
                           if_play_next_in_queue: bool) -> Union[str, None]:
@@ -201,6 +213,47 @@ class MusicBot(BasicBot):
             if not bots_voice:
                 return False
         return True
+
+    def get_thumbnail_image_title_and_duration(self, url: str) -> Union[Tuple[str, str, int],
+                                                                        Tuple[None, None, None]]:
+        # Returns url to the thumbnail image, title and duration or None, None, None
+        ydl_opts = {
+                'quiet': True,
+            }
+        try:
+            with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+                info_dict = ydl.extract_info(url, download=False)
+
+                thumbnail_url = info_dict['thumbnail']
+                duration = info_dict['duration']
+                title = info_dict['title']
+
+                return thumbnail_url, title, duration
+        except Exception as e:
+            print(e)
+            return None, None, None
+
+    async def get_embed_message(self, interaction: discord.Interaction, url: str,
+                                message_at_the_top: str) -> Union[discord.Embed, None]:
+        if interaction.is_expired():
+            return None
+
+        try:
+            thumbnail_image_url, title, duration = self.get_thumbnail_image_title_and_duration(url)
+            if not thumbnail_image_url and not title and not duration:
+                return None
+            embed = discord.Embed(colour=discord.Color.blue(), title=f"{title}")
+            embed.set_author(name=message_at_the_top)
+            embed.set_thumbnail(url=thumbnail_image_url)
+            embed.add_field(name="Duration", value=f"{duration} s")
+            potencial_next_qued_title = self.url_queue.get_first_one_to_leave()
+            next_queued_title = potencial_next_qued_title if potencial_next_qued_title else "Nothing"
+            embed.add_field(name="Next in queue", value=next_queued_title)
+            embed.set_footer(text=interaction.guild.name, icon_url=interaction.guild.icon.url)
+            return embed
+        except Exception as e:
+            print(e)
+            return None
 
     def extract_direct_audio_url(self, url: str) -> Union[str, None]:
         ydl_opts = {'format': 'bestaudio/best',
@@ -314,6 +367,10 @@ class MusicBot(BasicBot):
 
     async def loop_audio(self, interaction: discord.Interaction, url_or_search_query: str) -> None:
         self.if_looped = True
+        try:
+            await interaction.response.defer(thinking=True)
+        except Exception:
+            pass  # interaction is already deferred
 
         url = None
         is_url_valid, _ = self.is_url_valid(url_or_search_query)
@@ -350,7 +407,11 @@ class MusicBot(BasicBot):
             await interaction.response.send_message("`Something is already playing`")
             return None
 
-        await interaction.response.send_message(f"Currently looped: {url}")
+        embed = await self.get_embed_message(interaction, url, f"Currently looped: {url}")
+        if not embed:
+            await self.respond_or_followup(interaction, f"Currently looped: {url}")
+        else:
+            await self.respond_or_followup(interaction, message=None, embed=embed)
 
         url = self.extract_direct_audio_url(url)
         if not url:
