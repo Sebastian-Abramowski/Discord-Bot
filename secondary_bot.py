@@ -5,8 +5,9 @@ import dotenv
 import os
 import time
 import hashlib
+from marvel_character import MarvelCharacter
 from basic_bot import BasicBot
-from typing import Union, Tuple
+from typing import Union, Tuple, NamedTuple, Optional
 
 dotenv.load_dotenv()
 
@@ -146,22 +147,6 @@ class RandomBot(BasicBot):
         return response.json()[0]["url"]
 
 
-class MarvelCharacter():
-    def __init__(self):
-        self.name = None
-        self.description = None
-        self.image_url = None
-        self.num_of_comics = None
-        self.num_of_matching_characters = None  # either 0 or 1 (limit=1)
-        self.partly_maching_names = None
-
-    def __str__(self):
-        list_of_attributes = [self.name, self.description, self.image_url,
-                              self.num_of_comics, self.num_of_matching_characters,
-                              self.partly_maching_names]
-        return "\n".join([str(attr) for attr in list_of_attributes])
-
-
 class DonkeySecondaryBot(RandomBot):
     def __init__(self):
         super().__init__()
@@ -221,7 +206,7 @@ class DonkeySecondaryBot(RandomBot):
         return response
 
     async def check_marvel_character(self, interaction: discord.Interaction, name: str) -> None:
-        marvel_character = self.get_marvel_character(name)
+        marvel_character = self.try_getting_marvel_character(name)
         if not marvel_character:
             await self.respond_or_followup(
                 interaction,
@@ -229,106 +214,11 @@ class DonkeySecondaryBot(RandomBot):
             return None
 
         if marvel_character.num_of_matching_characters == 0:
-            if marvel_character.partly_maching_names:
-                if len(marvel_character.partly_maching_names) == 1:
-                    await interaction.response.defer(thinking=True)
-                    proper_name = marvel_character.partly_maching_names[0]
-                    await self.check_marvel_character(interaction, proper_name)
-                    return None
-                names = ", ".join(marvel_character.partly_maching_names)
-                msg = ("You need to be more specific. These are "
-                       f"similar names of characters in our data: {names}")
-                await self.respond_or_followup(interaction, msg)
-                return None
-            else:
-                await self.respond_or_followup(
-                    interaction,
-                    f"No marvel character with name of: '{name}' found")
-                return None
-
-        try:
-            embed = discord.Embed(color=discord.Color.red(), title=marvel_character.name)
-            embed.set_image(url=marvel_character.image_url)
-            embed.add_field(name="Description", value=marvel_character.description, inline=False)
-            embed.add_field(name="Appeared/mentioned in:",
-                            value=f"{marvel_character.num_of_comics} comics")
-            await self.respond_or_followup(interaction, message=None, embed=embed)
-        except Exception as e:
-            print(e)
-            await self.respond_or_followup(
-                interaction,
-                f"There was a problem with showing infrormation about {name}")
-
-    def get_marvel_character(self, name: str) -> Union[MarvelCharacter, None]:
-        marvel_api_public_key = os.getenv("MARVEL_API_PUBLIC_KEY")
-        marvel_api_private_key = os.getenv("MARVEL_API_PRIVATE_KEY")
-        ts = str(time.time())
-        hash_input = ts + marvel_api_private_key + marvel_api_public_key
-        # Get hexadecimal representation of hashed, in md5 algorithm, value
-        hash_value = hashlib.md5(hash_input.encode()).hexdigest()
-
-        params = {
-            "name": name,
-            "ts": ts,
-            "apikey": marvel_api_public_key,
-            "hash": hash_value,
-            "limit": 1,
-        }
-
-        try:
-            response = requests.get("http://gateway.marvel.com/v1/public/characters",
-                                    params=params, timeout=3)
-        except Exception as e:
-            print(e)
-            return None
-        response = response.json()
-
-        if response['code'] != 200:
-            return None
-
-        character = MarvelCharacter()
-
-        number_of_results = response["data"]["total"]  # 0 or 1
-        character.num_of_matching_characters = 0
-        if number_of_results == 0:
-            params = {
-                "nameStartsWith": name,
-                "ts": ts,
-                "apikey": marvel_api_public_key,
-                "hash": hash_value,
-            }
-
-            try:
-                response = requests.get("http://gateway.marvel.com/v1/public/characters",
-                                        params=params, timeout=3)
-            except Exception as e:
-                print(e)
-                return None
-            response = response.json()
-
-            if response['code'] != 200:
-                return None
-
-            results = response["data"]["results"]
-            names = []
-            for result_dict in results:
-                names.append(result_dict["name"])
-            character.partly_maching_names = names
-            return character
-
-        character.num_of_matching_characters = 1
-
-        result = response["data"]["results"][0]
-        char_name = result["name"]
-        description = result["description"]
-        image = ".".join([result["thumbnail"]["path"], result["thumbnail"]["extension"]])
-        num_of_comics = result["comics"]["available"]
-
-        character.name = char_name
-        character.description = description
-        character.image_url = image
-        character.num_of_comics = num_of_comics
-        return character
+            await self.respond_if_no_matching_marvel_character_found(interaction, marvel_character,
+                                                                     passed_character_name=name)
+        else:
+            await self.respond_if_matching_marvel_character_found(interaction, marvel_character,
+                                                                  passed_character_name=name)
 
     async def respond_or_followup(self, interaction: discord.Interaction, message: str,
                                   embed: discord.Embed = None) -> None:
@@ -341,17 +231,143 @@ class DonkeySecondaryBot(RandomBot):
         except Exception as e:
             print(e)
 
+    def try_getting_marvel_character(self, name: str) -> Union[MarvelCharacter, None]:
+        try:
+            marvel_character = self.get_marvel_character(name)
+            return marvel_character
+        except Exception as e:
+            print(e)
+            return None
+
+    def get_marvel_character(self, name: str) -> Optional[MarvelCharacter]:
+        response = self.get_response_from_marvel_characters_api_by_name(name)
+        if not self.is_response_valid(response):
+            return None
+
+        character = MarvelCharacter()
+
+        number_of_results = response["data"]["total"]  # 0 or 1 (limit=1)
+        character.num_of_matching_characters = 0
+        if number_of_results == 0:
+            response = self.get_response_from_marvel_characters_api_by_name_beginning(
+                name_beginning=name)
+            if not self.is_response_valid(response):
+                return None
+            results = response["data"]["results"]
+            if_character_updated = character.try_updating_partly_matching_names(results)
+        else:
+            character.num_of_matching_characters = 1
+            result = response["data"]["results"][0]
+            if_character_updated = character.try_updating_with_found_result(result)
+
+        if not if_character_updated:
+            return None
+        return character
+
+    def is_response_valid(self, response: Optional[dict[str, object]]) -> bool:
+        if not response:
+            return False
+        if response.get('code', 0) != 200:
+            return False
+        return True
+
+    def get_response_from_marvel_characters_api_by_name(self, name: str) -> Union[dict[str, object],
+                                                                                  None]:
+        try:
+            marvel_api_info = self.get_marvel_api_info()
+            params = {
+                "name": name,
+                "ts": marvel_api_info.ts,
+                "apikey": marvel_api_info.apikey,
+                "hash": marvel_api_info.hash,
+                "limit": 1,
+            }
+
+            response = requests.get("http://gateway.marvel.com/v1/public/characters",
+                                    params=params, timeout=3)
+            response = response.json()
+            return response
+        except Exception as e:
+            print(e)
+            return None
+
+    def get_marvel_api_info(self) -> NamedTuple:
+        marvel_api_public_key = os.getenv("MARVEL_API_PUBLIC_KEY")
+        marvel_api_private_key = os.getenv("MARVEL_API_PRIVATE_KEY")
+        ts = str(time.time())
+        hash_input = ts + marvel_api_private_key + marvel_api_public_key
+        # Get hexadecimal representation of hashed, in md5 algorithm, value
+        hash_value = hashlib.md5(hash_input.encode()).hexdigest()
+
+        class MarvelApiInfo(NamedTuple):
+            ts: str
+            apikey: str
+            hash: str
+
+        return MarvelApiInfo(ts, marvel_api_public_key, hash_value)
+
+    def get_response_from_marvel_characters_api_by_name_beginning(self, name_beginning: str
+                                                                  ) -> Union[dict[str, object], None]:
+        try:
+            marvel_api_info = self.get_marvel_api_info()
+            params = {
+                    "nameStartsWith": name_beginning,
+                    "ts": marvel_api_info.ts,
+                    "apikey": marvel_api_info.apikey,
+                    "hash": marvel_api_info.hash,
+                }
+
+            response = requests.get("http://gateway.marvel.com/v1/public/characters",
+                                    params=params, timeout=3)
+            response = response.json()
+            return response
+        except Exception as e:
+            print(e)
+            return None
+
+    async def respond_if_no_matching_marvel_character_found(self, interaction: discord.Interaction,
+                                                            marvel_character: MarvelCharacter,
+                                                            passed_character_name: str) -> None:
+        if marvel_character.partly_maching_names:
+            if len(marvel_character.partly_maching_names) == 1:
+                await interaction.response.defer(thinking=True)
+                proper_name = marvel_character.partly_maching_names[0]
+                await self.check_marvel_character(interaction, proper_name)
+                return None
+            names = ", ".join(marvel_character.partly_maching_names)
+            msg = ("You need to be more specific. These are "
+                   f"similar names of characters in our data: {names}")
+            await self.respond_or_followup(interaction, msg)
+            return None
+        else:
+            await self.respond_or_followup(
+                interaction,
+                f"No marvel character with name of: '{passed_character_name}' found")
+            return None
+
+    async def respond_if_matching_marvel_character_found(self, interaction: discord.Interaction,
+                                                         marvel_character: MarvelCharacter,
+                                                         passed_character_name: str) -> None:
+        try:
+            embed = discord.Embed(color=discord.Color.red(), title=marvel_character.name)
+            embed.set_image(url=marvel_character.image_url)
+            embed.add_field(name="Description", value=marvel_character.description, inline=False)
+            embed.add_field(name="Appeared/mentioned in:",
+                            value=f"{marvel_character.num_of_comics} comics")
+            await self.respond_or_followup(interaction, message=None, embed=embed)
+        except Exception as e:
+            print(e)
+            await self.respond_or_followup(
+                interaction,
+                f"There was a problem with showing infrormation about {passed_character_name}")
+
     # TODO: check_eng_word https://www.wordsapi.com/ trzeba inny bo potrzebna karta
     # TODO: weather where https://openweathermap.org/weathermap?basemap=map&cities=true&layer=temperature&lat=52.7438&lon=20.9578&zoom=10 # noqa: E501
-    # TODO: check_marvel_character
-    # TODO: check_marvel_film # https://developer.marvel.com/docs
 
 # TODO: hosting
 # TODO: sprawdź type hinty
 # TODO: testy drugiego bota
 # TODO: README zaktualizuj environmental variables
-
-# TODO: get_marvel_character_info + refactor
 
 
 bot = DonkeySecondaryBot()

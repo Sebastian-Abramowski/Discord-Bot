@@ -1,7 +1,7 @@
 import discord
 import yt_dlp as youtube_dl
 import asyncio
-import validations
+import utilities
 from audio_queue import AudioQueue
 from typing import Union, Tuple
 from basic_bot import BasicBot
@@ -196,7 +196,7 @@ class MusicBot(BasicBot):
         if self.is_url_youtube_playlist(url):
             return False, "`Passed url leads to youtube playlist. We advise to use single videos`"
 
-        if not validations.is_url_valid(url):
+        if not utilities.is_url_valid(url):
             return False, f"`You passed invalid url. Passed url: {url}`"
         return True, None
 
