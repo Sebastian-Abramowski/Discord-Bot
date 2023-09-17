@@ -1,5 +1,5 @@
 from random import shuffle
-from typing import Union
+from typing import Optional
 
 
 class AudioQueue():
@@ -30,7 +30,7 @@ class AudioQueue():
         if self.queue:
             return self.queue.pop(0)
 
-    def get_first_one_to_leave(self) -> Union[str, None]:
+    def get_first_one_to_leave(self) -> Optional[str]:
         if self.queue:
             return self.queue[0]
         return None

@@ -41,7 +41,7 @@ class RandomBot(BasicBot):
         else:
             await interaction.response.send_message("`There was a problem with getting a random joke`")
 
-    def get_random_joke(self) -> Union[str, None]:
+    def get_random_joke(self) -> Optional[str]:
         url_to_repo = os.getenv("URL_TO_MY_REPO")
         headers = {
             "User-Agent": f"My DiscordBot ({url_to_repo})",
@@ -66,7 +66,7 @@ class RandomBot(BasicBot):
         else:
             await interaction.response.send_message("`There was a problem with getting a random fact`")
 
-    def get_random_fact(self) -> Union[str, None]:
+    def get_random_fact(self) -> Optional[str]:
         headers, payload = self.get_headers_and_params_for_api_ninjas()
         try:
             response = requests.get("https://api.api-ninjas.com/v1/facts", params=payload,
@@ -95,7 +95,7 @@ class RandomBot(BasicBot):
         else:
             await interaction.response.send_message("`There was a problem with getting a random riddle`")
 
-    def get_embed_with_random_riddle(self) -> Union[discord.Embed, None]:
+    def get_embed_with_random_riddle(self) -> Optional[discord.Embed]:
         riddle_dict = self.get_dict_with_random_riddle()
 
         if not riddle_dict:
@@ -109,7 +109,7 @@ class RandomBot(BasicBot):
         embed.add_field(name="See answer: ", value=f"||{answer}||")
         return embed
 
-    def get_dict_with_random_riddle(self) -> Union[dict[str, str], None]:
+    def get_dict_with_random_riddle(self) -> Optional[dict[str, str]]:
         try:
             headers, payload = self.get_headers_and_params_for_api_ninjas()
             response = requests.get("https://api.api-ninjas.com/v1/riddles", params=payload,
@@ -131,7 +131,7 @@ class RandomBot(BasicBot):
             await interaction.response.send_message(
                 "`There was a problem with getting a random cat image`")
 
-    def get_random_cat_image(self) -> Union[str, None]:
+    def get_random_cat_image(self) -> Optional[str]:
         # It returns url to an image (str) or None
         thecatapi_api_key = os.getenv("THECATAPI_API_KEY")
         headers = {
@@ -160,7 +160,7 @@ class DonkeySecondaryBot(RandomBot):
             await interaction.response.send_message(
                 f"`There was a problem with getting the info of the movie called` **{title}**")
 
-    def get_movie_embed_info_by_title(self, title: str) -> Union[discord.Embed, None]:
+    def get_movie_embed_info_by_title(self, title: str) -> Optional[discord.Embed]:
         movie_info_dict = self.get_movie_info_by_title(title)
 
         if not movie_info_dict:
@@ -232,7 +232,7 @@ class DonkeySecondaryBot(RandomBot):
         except Exception as e:
             print(e)
 
-    def try_getting_marvel_character(self, name: str) -> Union[MarvelCharacter, None]:
+    def try_getting_marvel_character(self, name: str) -> Optional[MarvelCharacter]:
         try:
             marvel_character = self.get_marvel_character(name)
             return marvel_character
@@ -272,8 +272,7 @@ class DonkeySecondaryBot(RandomBot):
             return False
         return True
 
-    def get_response_from_marvel_characters_api_by_name(self, name: str) -> Union[dict[str, object],
-                                                                                  None]:
+    def get_response_from_marvel_characters_api_by_name(self, name: str) -> Optional[dict[str, object]]:
         try:
             marvel_api_info = self.get_marvel_api_info()
             params = {
@@ -380,7 +379,8 @@ class DonkeySecondaryBot(RandomBot):
             timezone = ", ".join(list(country_info["timezones"]))
             languages = ", ".join(list(country_info["languages"].values()))
             flag = country_info["flag"]["large"]
-            currencies = ", ".join([currency["name"] for currency in country_info["currencies"].values()])
+            currencies = ", ".join(
+                [currency["name"] for currency in country_info["currencies"].values()])
 
             embed = discord.Embed(color=discord.Color.yellow(), title=country_name)
             embed.set_image(url=flag)

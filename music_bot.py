@@ -3,7 +3,7 @@ import yt_dlp as youtube_dl
 import asyncio
 import utilities
 from audio_queue import AudioQueue
-from typing import Union, Tuple
+from typing import Union, Tuple, Optional
 from basic_bot import BasicBot
 
 FFMPEG_OPTIONS = {
@@ -75,7 +75,7 @@ class MusicBot(BasicBot):
             await interaction.response.send_message(
                 "`You are not in a voice channel.`")
 
-    async def play(self, interaction: discord.Interaction, url_or_search_query: Union[str, None],
+    async def play(self, interaction: discord.Interaction, url_or_search_query: Optional[str],
                    if_play_next_in_queue=False) -> None:
         self.if_queue_was_stopped = False
         # VoiceClient associated with the specified guild (there is one bot per server)
@@ -160,7 +160,7 @@ class MusicBot(BasicBot):
             print(e)
 
     def get_validated_url(self, url_or_search_query: str,
-                          if_play_next_in_queue: bool) -> Union[str, None]:
+                          if_play_next_in_queue: bool) -> Optional[str]:
         url = None
         if url_or_search_query and not if_play_next_in_queue:
             is_url_valid, _ = self.is_url_valid(url_or_search_query)
@@ -175,7 +175,7 @@ class MusicBot(BasicBot):
             url = url_or_search_query
             return url
 
-    def get_url_from_search_query(self, search_query: str) -> Union[str, None]:
+    def get_url_from_search_query(self, search_query: str) -> Optional[str]:
         ydl_opts = {
             'quiet': True,
             'extract_flat': True,
@@ -189,7 +189,7 @@ class MusicBot(BasicBot):
             else:
                 return None
 
-    def is_url_valid(self, url: str) -> Tuple[bool, Union[str, None]]:
+    def is_url_valid(self, url: str) -> Tuple[bool, Optional[str]]:
         # Returns bool indicating if url is valid and the massage about
         # what is wrong with url (it can be None)
 
@@ -234,7 +234,7 @@ class MusicBot(BasicBot):
             return None, None, None
 
     async def get_embed_message(self, interaction: discord.Interaction, url: str,
-                                message_at_the_top: str) -> Union[discord.Embed, None]:
+                                message_at_the_top: str) -> Optional[discord.Embed]:
         if interaction.is_expired():
             return None
 
@@ -255,7 +255,7 @@ class MusicBot(BasicBot):
             print(e)
             return None
 
-    def extract_direct_audio_url(self, url: str) -> Union[str, None]:
+    def extract_direct_audio_url(self, url: str) -> Optional[str]:
         ydl_opts = {'format': 'bestaudio/best',
                     'postprocessors': [{'key': 'FFmpegExtractAudio',
                                         'preferredcodec': 'mp3'}]}
