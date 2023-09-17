@@ -9,8 +9,8 @@ Installation of used python modules:
 ```bash
 pip install discord
 pip install PyNaCl # (for voice support)
-pip install python-dotenv
-pip install yt-dlp
+pip install python-dotenv # (for using environmental variables)
+pip install yt-dlp # (for getting information about videos from YouTube and other video sites)
 pip install Django # (for URL validator)
 ```
 
