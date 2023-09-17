@@ -5,6 +5,7 @@ import dotenv
 import os
 import time
 import hashlib
+import utilities
 from marvel_character import MarvelCharacter
 from basic_bot import BasicBot
 from typing import Union, Tuple, NamedTuple, Optional
@@ -109,8 +110,8 @@ class RandomBot(BasicBot):
         return embed
 
     def get_dict_with_random_riddle(self) -> Union[dict[str, str], None]:
-        headers, payload = self.get_headers_and_params_for_api_ninjas()
         try:
+            headers, payload = self.get_headers_and_params_for_api_ninjas()
             response = requests.get("https://api.api-ninjas.com/v1/riddles", params=payload,
                                     headers=headers, timeout=3)
         except Exception as e:
@@ -152,7 +153,7 @@ class DonkeySecondaryBot(RandomBot):
         super().__init__()
 
     async def check_movie(self, interaction: discord.Interaction, title: str) -> None:
-        embed = self.get_movie_embed_info_by_title(title)
+        embed = self.get_movie_embed_info_by_title(title)  # TODO: try
         if embed:
             await interaction.response.send_message(embed=embed)
         else:
@@ -188,11 +189,11 @@ class DonkeySecondaryBot(RandomBot):
 
     def get_movie_info_by_title(self, title: str) -> Union[dict[str, str], None]:
         # Returns movie info and url to the image of the poster or None, None
-        omdbapi_api_key = os.getenv("OMDB_API_API_KEY")
-        params = {
-            "t": title
-        }
         try:
+            omdbapi_api_key = os.getenv("OMDB_API_API_KEY")
+            params = {
+                "t": title
+            }
             response = requests.get(f"http://www.omdbapi.com/?apikey={omdbapi_api_key}&",
                                     params=params)
         except Exception as e:
@@ -241,7 +242,7 @@ class DonkeySecondaryBot(RandomBot):
 
     def get_marvel_character(self, name: str) -> Optional[MarvelCharacter]:
         response = self.get_response_from_marvel_characters_api_by_name(name)
-        if not self.is_response_valid(response):
+        if not self.is_marvel_api_response_valid(response):
             return None
 
         character = MarvelCharacter()
@@ -251,7 +252,7 @@ class DonkeySecondaryBot(RandomBot):
         if number_of_results == 0:
             response = self.get_response_from_marvel_characters_api_by_name_beginning(
                 name_beginning=name)
-            if not self.is_response_valid(response):
+            if not self.is_marvel_api_response_valid(response):
                 return None
             results = response["data"]["results"]
             if_character_updated = character.try_updating_partly_matching_names(results)
@@ -264,7 +265,7 @@ class DonkeySecondaryBot(RandomBot):
             return None
         return character
 
-    def is_response_valid(self, response: Optional[dict[str, object]]) -> bool:
+    def is_marvel_api_response_valid(self, response: Optional[dict[str, object]]) -> bool:
         if not response:
             return False
         if response.get('code', 0) != 200:
@@ -361,16 +362,69 @@ class DonkeySecondaryBot(RandomBot):
                 interaction,
                 f"There was a problem with showing infrormation about {passed_character_name}")
 
-    # TODO: check_eng_word https://www.wordsapi.com/ trzeba inny bo potrzebna karta
-    # TODO: weather where https://openweathermap.org/weathermap?basemap=map&cities=true&layer=temperature&lat=52.7438&lon=20.9578&zoom=10 # noqa: E501
+    async def check_country(self, interaction: discord.Interaction, name: str) -> None:
+        embed = self.get_country_embed_info_by_name(name)
+        if embed:
+            await interaction.response.send_message(embed=embed)
+        else:
+            await interaction.response.send_message(
+                f"`No information about the country called:` **{name}** `found`")
+
+    def get_country_embed_info_by_name(self, name: str) -> Optional[discord.Embed]:
+        try:
+            country_info = self.get_info_about_country_by_name(name)
+            country_name = country_info["name"]
+            capital = country_info["capital"]
+            region = country_info["region"]
+            population = utilities.format_wide_number(country_info["population"], " ")
+            timezone = ", ".join(list(country_info["timezones"]))
+            languages = ", ".join(list(country_info["languages"].values()))
+            flag = country_info["flag"]["large"]
+            currencies = ", ".join([currency["name"] for currency in country_info["currencies"].values()])
+
+            embed = discord.Embed(color=discord.Color.yellow(), title=country_name)
+            embed.set_image(url=flag)
+            embed.add_field(name="Capital: ", value=capital)
+            embed.add_field(name="Region: ", value=region)
+            embed.add_field(name="Population: ", value=population)
+            embed.add_field(name="Timezone: ", value=timezone)
+            embed.add_field(name="Languages: ", value=languages)
+            embed.add_field(name="Currencies: ", value=currencies)
+            return embed
+        except Exception as e:
+            print(e)
+            return None
+
+    def get_info_about_country_by_name(self, name: str) -> Optional[dict[str, object]]:
+        try:
+            apikey = os.getenv("COUNTRYAPI_API_KEY")
+            params = {
+                "apikey": apikey
+            }
+            url = f"https://countryapi.io/api/name/{name}"
+
+            response = requests.get(url, params=params)
+            if 'error' in response or response.status_code != 200:
+                return None
+
+            country_dict_info = list(response.json().values())[0]
+            return country_dict_info
+        except Exception as e:
+            print(e)
+            return None
+
 
 # TODO: hosting
 # TODO: sprawdź type hinty
 # TODO: testy drugiego bota
 # TODO: README zaktualizuj environmental variables
+# TODO: tests
+# TODO: sprawdz try/get
+# TODO: music color green embed, looped dark green
 
 
 bot = DonkeySecondaryBot()
+bot.get_country_embed_info_by_name("poland")
 
 
 @bot.tree.command(name="flip_coin", description="Flip a coin and get either heads or tails")
@@ -415,3 +469,9 @@ async def check_movie_command(interaction: discord.Interaction, title: str):
 @discord.app_commands.describe(name="Name of character")
 async def check_marvel_character_command(interaction: discord.Interaction, name: str):
     await bot.check_marvel_character(interaction, name)
+
+
+@bot.tree.command(name="check_country", description="Check country info by its name")
+@discord.app_commands.describe(name="Name of country")
+async def check_country_command(interaction: discord.Interaction, name: str):
+    await bot.check_country(interaction, name)
