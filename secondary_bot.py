@@ -153,7 +153,7 @@ class DonkeySecondaryBot(RandomBot):
         super().__init__()
 
     async def check_movie(self, interaction: discord.Interaction, title: str) -> None:
-        embed = self.get_movie_embed_info_by_title(title)  # TODO: try
+        embed = self.get_movie_embed_info_by_title(title)
         if embed:
             await interaction.response.send_message(embed=embed)
         else:
@@ -207,7 +207,7 @@ class DonkeySecondaryBot(RandomBot):
         return response
 
     async def check_marvel_character(self, interaction: discord.Interaction, name: str) -> None:
-        marvel_character = self.try_getting_marvel_character(name)
+        marvel_character = self.get_marvel_character(name)
         if not marvel_character:
             await self.respond_or_followup(
                 interaction,
@@ -232,15 +232,15 @@ class DonkeySecondaryBot(RandomBot):
         except Exception as e:
             print(e)
 
-    def try_getting_marvel_character(self, name: str) -> Optional[MarvelCharacter]:
+    def get_marvel_character(self, name: str) -> Optional[MarvelCharacter]:
         try:
-            marvel_character = self.get_marvel_character(name)
+            marvel_character = self._get_marvel_character(name)
             return marvel_character
         except Exception as e:
             print(e)
             return None
 
-    def get_marvel_character(self, name: str) -> Optional[MarvelCharacter]:
+    def _get_marvel_character(self, name: str) -> Optional[MarvelCharacter]:
         response = self.get_response_from_marvel_characters_api_by_name(name)
         if not self.is_marvel_api_response_valid(response):
             return None
@@ -255,11 +255,11 @@ class DonkeySecondaryBot(RandomBot):
             if not self.is_marvel_api_response_valid(response):
                 return None
             results = response["data"]["results"]
-            if_character_updated = character.try_updating_partly_matching_names(results)
+            if_character_updated = character.update_partly_matching_names(results)
         else:
             character.num_of_matching_characters = 1
             result = response["data"]["results"][0]
-            if_character_updated = character.try_updating_with_found_result(result)
+            if_character_updated = character.update_with_found_result(result)
 
         if not if_character_updated:
             return None
@@ -420,8 +420,6 @@ class DonkeySecondaryBot(RandomBot):
 # TODO: README zaktualizuj environmental variables
 # TODO: tests
 # TODO: sprawdz try/get
-# TODO: music color green embed, looped dark green
-
 
 bot = DonkeySecondaryBot()
 bot.get_country_embed_info_by_name("poland")

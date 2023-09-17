@@ -14,7 +14,7 @@ class MarvelCharacter():
                               self.partly_maching_names]
         return "\n".join([str(attr) for attr in list_of_attributes])
 
-    def try_updating_with_found_result(self, result: dict[str, object]) -> bool:
+    def update_with_found_result(self, result: dict[str, object]) -> bool:
         # Returns True if it was successful, otherwise returns False
         try:
             char_name = result["name"]
@@ -31,7 +31,7 @@ class MarvelCharacter():
             print(e)
             return False
 
-    def try_updating_partly_matching_names(self, results: list[dict[str, object]]) -> bool:
+    def update_partly_matching_names(self, results: list[dict[str, object]]) -> bool:
         # Returns True if it was successful, otherwise returns False
         # This should be called when multiple results with matching character were found
         try:

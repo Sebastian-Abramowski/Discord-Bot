@@ -144,7 +144,7 @@ class MusicBot(BasicBot):
                 self.is_preparing_to_play = False
                 return None
 
-            await self.try_playing_audio_according_to_queue(interaction, bots_voice, url)
+            await self.play_audio_according_to_queue(interaction, bots_voice, url)
         else:
             await self.respond_or_followup(interaction, "`The bot is not conencted to any channel`")
 
@@ -242,7 +242,7 @@ class MusicBot(BasicBot):
             thumbnail_image_url, title, duration = self.get_thumbnail_image_title_and_duration(url)
             if not thumbnail_image_url and not title and not duration:
                 return None
-            embed = discord.Embed(colour=discord.Color.blue(), title=f"{title}")
+            embed = discord.Embed(colour=discord.Color.green(), title=f"{title}")
             embed.set_author(name=message_at_the_top)
             embed.set_thumbnail(url=thumbnail_image_url)
             embed.add_field(name="Duration", value=f"{duration} s")
@@ -269,8 +269,8 @@ class MusicBot(BasicBot):
             print(e)
             return None
 
-    async def try_playing_audio_according_to_queue(self, interaction: discord.Interaction,
-                                                   bots_voice: discord.VoiceClient, url: str) -> None:
+    async def play_audio_according_to_queue(self, interaction: discord.Interaction,
+                                            bots_voice: discord.VoiceClient, url: str) -> None:
         try:
             source = await discord.FFmpegOpusAudio.from_probe(url, **FFMPEG_OPTIONS)
             self.is_preparing_to_play = False
@@ -350,12 +350,12 @@ class MusicBot(BasicBot):
                 await interaction.response.send_message(
                     "`The bot is currently playing something`")
             else:
-                await self.try_playing_audio_from_file(interaction, bots_voice,
-                                                       path_to_audio, message_after_playing)
+                await self._play_audio_from_file(interaction, bots_voice,
+                                                 path_to_audio, message_after_playing)
 
-    async def try_playing_audio_from_file(self, interaction: discord.Interaction,
-                                          bots_voice: discord.VoiceClient,
-                                          path_to_audio: str, message_after_playing: str) -> None:
+    async def _play_audio_from_file(self, interaction: discord.Interaction,
+                                    bots_voice: discord.VoiceClient,
+                                    path_to_audio: str, message_after_playing: str) -> None:
         try:
             source = discord.FFmpegOpusAudio(path_to_audio)
             bots_voice.play(source)
@@ -420,8 +420,8 @@ class MusicBot(BasicBot):
             return None
 
         while self.if_looped:
-            if_played_without_errors = await self.try_playing_from_direct_audio_url(bots_voice,
-                                                                                    url)
+            if_played_without_errors = await self.play_from_direct_audio_url(bots_voice,
+                                                                             url)
             if not if_played_without_errors:
                 await interaction.followup.send(
                     "`Something went wrong with playing audio...`")
@@ -434,8 +434,8 @@ class MusicBot(BasicBot):
             # even though the voice has been already stopped, won't do anything
             bots_voice.stop()
 
-    async def try_playing_from_direct_audio_url(self, bots_voice: discord.VoiceClient,
-                                                url: str) -> bool:
+    async def play_from_direct_audio_url(self, bots_voice: discord.VoiceClient,
+                                         url: str) -> bool:
         # Returns True if there was no errors, otherwise returns False
         try:
             source = await discord.FFmpegOpusAudio.from_probe(url, **FFMPEG_OPTIONS)
