@@ -4,8 +4,9 @@
 
 ## Invite to your server
 
-DonkeyMusicBot: https://discord.com/api/oauth2/authorize?client_id=1151572540075032586&permissions=35461400849472&scope=bot%20applications.commands
-DonkeySecondaryBot: https://discord.com/api/oauth2/authorize?client_id=1151580275478896670&permissions=277092756544&scope=bot%20applications.commands
+DonkeyMusicBot: <br>https://discord.com/api/oauth2/authorize?client_id=1151572540075032586&permissions=35461400849472&scope=bot%20applications.commands
+<br>
+DonkeySecondaryBot: <br>https://discord.com/api/oauth2/authorize?client_id=1151580275478896670&permissions=277092756544&scope=bot%20applications.commands
 
 ## Features
 
