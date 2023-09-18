@@ -86,7 +86,7 @@ class MusicBot(BasicBot):
 
         if self.if_looped:
             msg = ("`The audio is looped currently. Use '/end_loop' "
-                   "or '/stop' if you want it to stop.`")
+                   "or '/end_loop_now' or '/stop' if you want it to stop.`")
             await self.respond_or_followup(
                 interaction, msg)
             return None
@@ -111,7 +111,13 @@ class MusicBot(BasicBot):
 
         if_bot_has_channel = await self.has_bot_joined_channel(interaction, bots_voice)
         if not if_bot_has_channel:
-            await self.respond_or_followup(interaction, "`The user is not connected to any channel`")
+            if if_bot_has_channel is False:
+                await self.respond_or_followup(interaction, "`The user is not connected to any channel`")
+            else:
+                msg = ("`The bot was just joining your channel in previous command "
+                       "of 'play', chill, now you can use 'play' command very quickly "
+                       "as the bot is already connected`")
+                await self.respond_or_followup(interaction, msg)
             return None
         bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
 
@@ -157,10 +163,10 @@ class MusicBot(BasicBot):
             if not interaction.is_expired():
                 await interaction.followup.send(message, embed=embed)
         except Exception as e:
-            print(e)
+            print("[ERROR] " + str(e))
 
     def get_validated_url(self, url_or_search_query: str,
-                          if_play_next_in_queue: bool) -> Optional[str]:
+                          if_play_next_in_queue: bool = False) -> Optional[str]:
         url = None
         if url_or_search_query and not if_play_next_in_queue:
             is_url_valid, _ = self.is_url_valid(url_or_search_query)
@@ -204,15 +210,29 @@ class MusicBot(BasicBot):
         return "youtube" in url and "list=" in url
 
     async def has_bot_joined_channel(self, interaction: discord.Interaction,
-                                     bots_voice: discord.VoiceClient) -> bool:
+                                     bots_voice: discord.VoiceClient) -> Optional[bool]:
+        # Returns True/False if bot joined user's channel, returns None if
+        # discord.errors.ClientException error occured
         if not bots_voice:
-            await self.join(interaction, without_response=True)
-            bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
+            if_tried_joining_without_error = await self.join_users_channel_safely(interaction)
+            if not if_tried_joining_without_error:
+                return None
 
+            bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
             # if there is still no voice connection that means that the user is in no channel
             if not bots_voice:
                 return False
         return True
+
+    async def join_users_channel_safely(self, interaction: discord.Interaction) -> bool:
+        # Returns True if there wasn't error while joining, in case of
+        # discord.errors.ClientException returns False
+        try:
+            await self.join(interaction, without_response=True)
+            return True
+        except discord.errors.ClientException as e:
+            print("[ERROR] " + str(e))
+            return False
 
     def get_thumbnail_image_title_and_duration(self, url: str) -> Union[Tuple[str, str, int],
                                                                         Tuple[None, None, None]]:
@@ -230,7 +250,7 @@ class MusicBot(BasicBot):
 
                 return thumbnail_url, title, duration
         except Exception as e:
-            print(e)
+            print("[ERROR] " + str(e))
             return None, None, None
 
     async def get_embed_message(self, interaction: discord.Interaction, url: str,
@@ -252,7 +272,7 @@ class MusicBot(BasicBot):
             embed.set_footer(text=interaction.guild.name, icon_url=interaction.guild.icon.url)
             return embed
         except Exception as e:
-            print(e)
+            print("[ERROR] " + str(e))
             return None
 
     def extract_direct_audio_url(self, url: str) -> Optional[str]:
@@ -266,7 +286,7 @@ class MusicBot(BasicBot):
                 # Opus format - way of compressing and encoding the audio data
                 return url
         except Exception as e:
-            print(e)
+            print("[ERROR] " + str(e))
             return None
 
     async def play_audio_according_to_queue(self, interaction: discord.Interaction,
@@ -289,7 +309,7 @@ class MusicBot(BasicBot):
                 await self.play(interaction, self.url_queue.pop(),
                                 if_play_next_in_queue=True)
         except Exception as e:
-            print(e)
+            print("[ERROR] " + str(e))
             self.is_preparing_to_play = False
             self.if_queue_was_stopped = False
             await self.respond_or_followup(interaction,
@@ -298,7 +318,8 @@ class MusicBot(BasicBot):
     async def skip(self, interaction: discord.Interaction) -> None:
         if self.if_looped:
             msg = ("`You cannot skip a song that is playing in a loop. "
-                   "If you want to end the loop, you should use '/end_loop' or '/stop'`")
+                   "If you want to end the loop, you should use '/end_loop' "
+                   "or '/end_loop_now' or '/stop'`")
             await interaction.response.send_message(msg)
             return None
 
@@ -328,8 +349,9 @@ class MusicBot(BasicBot):
     async def play_from_file(self, interaction: discord.Interaction, path_to_audio: str,
                              message_after_playing: str) -> None:
         if self.if_looped:
-            await interaction.response.send_message(
-                "`The audio is looped currently. Use '/end_loop' or '/stop' if you want it to stop.`")
+            msg = ("`The audio is looped currently. Use '/end_loop' "
+                   "or '/end_loop_now' or '/stop' if you want it to stop.`")
+            await interaction.response.send_message(msg)
             return None
 
         bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
@@ -361,7 +383,7 @@ class MusicBot(BasicBot):
             bots_voice.play(source)
             await interaction.response.send_message(message_after_playing)
         except Exception as e:
-            print(e)
+            print("[ERROR] " + str(e))
             await interaction.response.send_message(
                 f"`There was a problem with playing {path_to_audio} audio file`")
 
@@ -442,7 +464,7 @@ class MusicBot(BasicBot):
             bots_voice.play(source)
             return True
         except Exception as e:
-            print(e)
+            print("[ERROR] " + str(e))
             return False
 
     async def end_loop(self, interaction: discord.Interaction) -> None:
@@ -459,6 +481,13 @@ class MusicBot(BasicBot):
 
     async def pause(self, interaction: discord.Interaction) -> None:
         bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
+
+        if self.if_looped:
+            msg = ("`The looped audio cannot be paused. To turn off the loop "
+                   "use '/end_loop' command or to stop immediately the loop and the looped audio "
+                   "use '/end_loop_now' or '/stop' command`")
+            await interaction.response.send_message(msg)
+            return None
 
         if bots_voice and bots_voice.is_connected():
             await self.pause_bot_playing(interaction, bots_voice)
@@ -543,7 +572,15 @@ class MusicBot(BasicBot):
         else:
             await interaction.response.send_message("`You try to shuffle the empty queue`")
 
-    async def put_on_top_of_queue(self, interaction: discord.Interaction, url: str) -> None:
+    async def put_on_top_of_queue(self, interaction: discord.Interaction,
+                                  url_or_search_query: str) -> None:
+        old_url_or_search_query = url_or_search_query
+        url = self.get_validated_url(url_or_search_query)
+        if not url:
+            await interaction.response.send_message(
+                f"`Passed search query: \n{old_url_or_search_query}\ncouldn't be found`")
+            return None
+
         self.url_queue.push_with_priority(url)
         await interaction.response.send_message("`Item was put on the top of the audio queue`")
 
@@ -617,7 +654,7 @@ async def resume_command(interaction: discord.Interaction):
     await bot.resume(interaction)
 
 
-@bot.tree.command(name="stop", description="Stop the bot's audio")
+@bot.tree.command(name="stop", description="Stop the bot's audio and end the looping if it is turned on")
 async def stop_command(interaction: discord.Interaction):
     await bot.stop(interaction)
 
@@ -643,9 +680,9 @@ async def shuffle_queue_command(interaction: discord.Interaction):
 
 
 @bot.tree.command(name="put_on_top_of_queue", description="Put item on the top of the audio queue")
-@discord.app_commands.describe(url="the link to the audio/video")
-async def put_on_top_of_queue_command(interaction: discord.Interaction, url: str):
-    await bot.put_on_top_of_queue(interaction, url)
+@discord.app_commands.describe(url_or_search_query="the link to the audio/video or yt search query")
+async def put_on_top_of_queue_command(interaction: discord.Interaction, url_or_search_query: str):
+    await bot.put_on_top_of_queue(interaction, url_or_search_query)
 
 
 @bot.tree.command(name="reset_bot", description="Reset the bot")

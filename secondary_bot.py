@@ -230,14 +230,14 @@ class DonkeySecondaryBot(RandomBot):
             if not interaction.is_expired():
                 await interaction.followup.send(message, embed=embed)
         except Exception as e:
-            print(e)
+            print("[ERROR] " + str(e))
 
     def get_marvel_character(self, name: str) -> Optional[MarvelCharacter]:
         try:
             marvel_character = self._get_marvel_character(name)
             return marvel_character
         except Exception as e:
-            print(e)
+            print("[ERROR] " + str(e))
             return None
 
     def _get_marvel_character(self, name: str) -> Optional[MarvelCharacter]:
@@ -288,7 +288,7 @@ class DonkeySecondaryBot(RandomBot):
             response = response.json()
             return response
         except Exception as e:
-            print(e)
+            print("[ERROR] " + str(e))
             return None
 
     def get_marvel_api_info(self) -> NamedTuple:
@@ -322,7 +322,7 @@ class DonkeySecondaryBot(RandomBot):
             response = response.json()
             return response
         except Exception as e:
-            print(e)
+            print("[ERROR] " + str(e))
             return None
 
     async def respond_if_no_matching_marvel_character_found(self, interaction: discord.Interaction,
@@ -356,7 +356,7 @@ class DonkeySecondaryBot(RandomBot):
                             value=f"{marvel_character.num_of_comics} comics")
             await self.respond_or_followup(interaction, message=None, embed=embed)
         except Exception as e:
-            print(e)
+            print("[ERROR] " + str(e))
             await self.respond_or_followup(
                 interaction,
                 f"There was a problem with showing infrormation about {passed_character_name}")
@@ -392,7 +392,7 @@ class DonkeySecondaryBot(RandomBot):
             embed.add_field(name="Currencies: ", value=currencies)
             return embed
         except Exception as e:
-            print(e)
+            print("[ERROR] " + str(e))
             return None
 
     def get_info_about_country_by_name(self, name: str) -> Optional[dict[str, object]]:
@@ -410,16 +410,15 @@ class DonkeySecondaryBot(RandomBot):
             country_dict_info = list(response.json().values())[0]
             return country_dict_info
         except Exception as e:
-            print(e)
+            print("[ERROR] " + str(e))
             return None
 
 
 # TODO: hosting
-# TODO: sprawdź type hinty
-# TODO: testy drugiego bota
-# TODO: README zaktualizuj environmental variables
-# TODO: tests
-# TODO: sprawdz try/get
+# TODO: sprawdź type hinty (2/3 done)
+# TODO: przetestuj MusicBota (2/3 done) -> pytesty zostały
+# TODO: przetestuj SecondaryBota (1/3 done)
+# TODO: tests (2/10 done)
 
 bot = DonkeySecondaryBot()
 bot.get_country_embed_info_by_name("poland")
