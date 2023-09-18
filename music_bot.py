@@ -13,8 +13,8 @@ FFMPEG_OPTIONS = {
 
 
 class MusicBot(BasicBot):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, name: str):
+        super().__init__(name)
         self.if_looped = False
         self.is_preparing_to_play = False
         self.if_queue_was_stopped = False
@@ -613,7 +613,7 @@ class MusicBot(BasicBot):
                 "`The bot is not currently on any channel`")
 
 
-bot = MusicBot()
+bot = MusicBot(name="DonkeyMusicBot")
 
 
 # Configurate slash commands

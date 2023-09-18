@@ -4,8 +4,9 @@ from discord.ext import commands
 
 # commands.Bot is a subclass of discord.Client
 class BasicBot(commands.Bot):
-    def __init__(self):
+    def __init__(self, name: str):
         super().__init__(command_prefix='.', intents=discord.Intents.all())
+        self.name = name
 
     async def on_ready(self) -> None:
         print(f"[BOT-INFO] {self.user} is now running")
@@ -26,7 +27,7 @@ class BasicBot(commands.Bot):
         self.print_message_info(message)
 
         for mentioned_member in message.mentions:
-            if mentioned_member.name == "DonkeyBot" and mentioned_member.bot is True:
+            if mentioned_member.name == self.name and mentioned_member.bot is True:
                 await self.handle_reply_when_mentioned(message)
 
     def print_message_info(self, message: discord.Message) -> None:
@@ -39,7 +40,10 @@ class BasicBot(commands.Bot):
         if "?" == message.content[-1]:
             await message.reply("I invoke my right not to answer this question")
         else:
-            await message.reply("Who asked?")
+            embed = discord.Embed(color=discord.Color.dark_green(), title="Who asked?")
+            file = discord.File("Assets/broccoli.png", filename="broccoli.png")
+            embed.set_image(url="attachment://broccoli.png")
+            await message.reply(file=file, embed=embed)
 
     async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState,
                                     after: discord.VoiceState) -> None:

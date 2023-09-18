@@ -14,8 +14,8 @@ dotenv.load_dotenv()
 
 
 class RandomBot(BasicBot):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, name: str):
+        super().__init__(name)
 
     async def flip_coin(self, interaction: discord.Interaction) -> None:
         heads_or_tails = random.choice(["heads", "tails"])
@@ -149,8 +149,14 @@ class RandomBot(BasicBot):
 
 
 class DonkeySecondaryBot(RandomBot):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, name: str):
+        super().__init__(name)
+
+    async def on_ready(self) -> None:
+        await super().on_ready()
+        await self.change_presence(status=discord.Status.online,
+                                   activity=discord.Activity(
+                                       type=discord.ActivityType.watching, name="/command"))
 
     async def check_movie(self, interaction: discord.Interaction, title: str) -> None:
         embed = self.get_movie_embed_info_by_title(title)
@@ -420,8 +426,7 @@ class DonkeySecondaryBot(RandomBot):
 # TODO: przetestuj SecondaryBota (1/3 done)
 # TODO: tests (2/10 done)
 
-bot = DonkeySecondaryBot()
-bot.get_country_embed_info_by_name("poland")
+bot = DonkeySecondaryBot(name="DonkeySecondaryBot")
 
 
 @bot.tree.command(name="flip_coin", description="Flip a coin and get either heads or tails")
