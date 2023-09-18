@@ -4,7 +4,8 @@
 
 ## Features
 
-Both bots use discord slash commands, after typing '/' in discord you will get hints on how to use them
+Both bots use discord slash commands <br>
+After typing '/' in discord, you will get hints on how to use them
 
 ### DonkeyMusicBot commands:
 
@@ -54,7 +55,9 @@ To run this project, you will need to add the following environment variables to
 For DonkeyMusicBot:
 
 - `DONKEY_MUSIC_BOT_TOKEN`
-  For DonkeySecondaryBot:
+
+For DonkeySecondaryBot:
+
 - `DONKEY_SECONDARY_BOT_TOKEN`
 - `URL_TO_MY_REPO`
 - `API_NINJAS_API_KEY`
