@@ -4,6 +4,8 @@
 
 ## Features
 
+Both bots use discord slash commands, after typing '/' in discord you will get hints on how to use them
+
 ### DonkeyMusicBot commands:
 
 - /join
@@ -50,13 +52,14 @@ You must have the <strong>ffmpeg</strong> executable in your path environment va
 To run this project, you will need to add the following environment variables to your .env file
 
 For DonkeyMusicBot:
-`DONKEY_MUSIC_BOT_TOKEN`
-For DonkeySecondaryBot:
-`DONKEY_SECONDARY_BOT_TOKEN`
-`URL_TO_MY_REPO`
-`API_NINJAS_API_KEY`
-`THECATAPI_API_KEY`
-`OMDB_API_API_KEY`
-`MARVEL_API_PUBLIC_KEY`
-`MARVEL_API_PRIVATE_KEY`
-`COUNTRYAPI_API_KEY`
+
+- `DONKEY_MUSIC_BOT_TOKEN`
+  For DonkeySecondaryBot:
+- `DONKEY_SECONDARY_BOT_TOKEN`
+- `URL_TO_MY_REPO`
+- `API_NINJAS_API_KEY`
+- `THECATAPI_API_KEY`
+- `OMDB_API_API_KEY`
+- `MARVEL_API_PUBLIC_KEY`
+- `MARVEL_API_PRIVATE_KEY`
+- `COUNTRYAPI_API_KEY`
