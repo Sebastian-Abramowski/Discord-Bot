@@ -2,6 +2,11 @@
 
 <img src="Assets/icon.png" alt="donkey image" width="24%">
 
+## Invite to your server
+
+DonkeyMusicBot: https://discord.com/api/oauth2/authorize?client_id=1151572540075032586&permissions=35461400849472&scope=bot%20applications.commands
+DonkeySecondaryBot: https://discord.com/api/oauth2/authorize?client_id=1151580275478896670&permissions=277092756544&scope=bot%20applications.commands
+
 ## Features
 
 Both bots use discord slash commands. After typing '/' in discord, you will get hints on how to use them.
