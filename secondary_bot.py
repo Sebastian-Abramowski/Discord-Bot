@@ -146,7 +146,7 @@ class RandomBot(BasicBot):
             return None
 
 
-class DonkeySecondaryBot(RandomBot):
+class SecondaryBot(RandomBot):
     def __init__(self, name: str):
         super().__init__(name)
 
@@ -420,7 +420,7 @@ class DonkeySecondaryBot(RandomBot):
 # TODO: hosting
 # TODO: tests (9/10 done)
 
-bot = DonkeySecondaryBot(name="DonkeySecondaryBot")
+bot = SecondaryBot(name="DonkeySecondaryBot")
 
 
 @bot.tree.command(name="flip_coin", description="Flip a coin and get either heads or tails")

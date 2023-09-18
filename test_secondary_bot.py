@@ -1,6 +1,6 @@
-from secondary_bot import DonkeySecondaryBot
+from secondary_bot import SecondaryBot
 
-bot = DonkeySecondaryBot(name="Jo")
+bot = SecondaryBot(name="Jo")
 # Testing if API calls return something
 
 
