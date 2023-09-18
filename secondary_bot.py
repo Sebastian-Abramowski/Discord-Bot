@@ -42,20 +42,19 @@ class RandomBot(BasicBot):
             await interaction.response.send_message("`There was a problem with getting a random joke`")
 
     def get_random_joke(self) -> Optional[str]:
-        url_to_repo = os.getenv("URL_TO_MY_REPO")
-        headers = {
-            "User-Agent": f"My DiscordBot ({url_to_repo})",
-            "Accept": "application/json",
-        }
         try:
+            url_to_repo = os.getenv("URL_TO_MY_REPO")
+            headers = {
+                "User-Agent": f"My DiscordBot ({url_to_repo})",
+                "Accept": "application/json",
+            }
             response = requests.get("https://icanhazdadjoke.com/", headers=headers, timeout=3)
+            if response.status_code != 200:
+                return None
+            return response.json()['joke']
         except Exception as e:
             print("[FECTHING-RANDOM-JOKE-ERROR] " + str(e))
             return None
-
-        if response.status_code != 200:
-            return None
-        return response.json()['joke']
 
     async def random_fact(self, interaction: discord.Interaction) -> None:
         fact = self.get_random_fact()
@@ -67,16 +66,16 @@ class RandomBot(BasicBot):
             await interaction.response.send_message("`There was a problem with getting a random fact`")
 
     def get_random_fact(self) -> Optional[str]:
-        headers, payload = self.get_headers_and_params_for_api_ninjas()
         try:
+            headers, payload = self.get_headers_and_params_for_api_ninjas()
             response = requests.get("https://api.api-ninjas.com/v1/facts", params=payload,
                                     headers=headers, timeout=3)
+            if response.status_code != 200:
+                return None
+            return response.json()[0]['fact']
         except Exception as e:
             print("[FECTHING-RANDOM-FACT-ERROR] " + str(e))
             return None
-        if response.status_code != 200:
-            return None
-        return response.json()[0]['fact']
 
     def get_headers_and_params_for_api_ninjas(self) -> Tuple[dict[str, str], dict[str, int]]:
         api_ninjas_api_key = os.getenv("API_NINJAS_API_KEY")
@@ -114,14 +113,13 @@ class RandomBot(BasicBot):
             headers, payload = self.get_headers_and_params_for_api_ninjas()
             response = requests.get("https://api.api-ninjas.com/v1/riddles", params=payload,
                                     headers=headers, timeout=3)
+            if response.status_code != 200:
+                return None
+            riddle = response.json()[0]
+            return riddle
         except Exception as e:
             print("[FECTHING-RANDOM-RIDDLE-ERROR] " + str(e))
             return None
-        if response.status_code != 200:
-            return None
-        riddle = response.json()[0]
-
-        return riddle
 
     async def random_cat_image(self, interaction: discord.Interaction) -> None:
         cat_img_url = self.get_random_cat_image()
@@ -133,19 +131,19 @@ class RandomBot(BasicBot):
 
     def get_random_cat_image(self) -> Optional[str]:
         # It returns url to an image (str) or None
-        thecatapi_api_key = os.getenv("THECATAPI_API_KEY")
-        headers = {
-            "x-api-key": thecatapi_api_key,
-        }
         try:
+            thecatapi_api_key = os.getenv("THECATAPI_API_KEY")
+            headers = {
+                "x-api-key": thecatapi_api_key,
+            }
             response = requests.get("https://api.thecatapi.com/v1/images/search?limit=1",
                                     headers=headers, timeout=3)
+            if response.status_code != 200:
+                return None
+            return response.json()[0]["url"]
         except Exception as e:
             print("[FECTHING-RANDOM-CAT-IMAGE-ERROR] " + str(e))
             return None
-        if response.status_code != 200:
-            return None
-        return response.json()[0]["url"]
 
 
 class DonkeySecondaryBot(RandomBot):
@@ -194,7 +192,6 @@ class DonkeySecondaryBot(RandomBot):
         return embed
 
     def get_movie_info_by_title(self, title: str) -> Union[dict[str, str], None]:
-        # Returns movie info and url to the image of the poster or None, None
         try:
             omdbapi_api_key = os.getenv("OMDB_API_API_KEY")
             params = {
@@ -202,15 +199,13 @@ class DonkeySecondaryBot(RandomBot):
             }
             response = requests.get(f"http://www.omdbapi.com/?apikey={omdbapi_api_key}&",
                                     params=params)
+            response = response.json()
+            if response["Response"] == "False":
+                return None
+            return response
         except Exception as e:
             print("[FECTHING-MOVIE-ERROR] " + str(e))
             return None
-        response = response.json()
-
-        if response["Response"] == "False":
-            return None
-
-        return response
 
     async def check_marvel_character(self, interaction: discord.Interaction, name: str) -> None:
         marvel_character = self.get_marvel_character(name)
@@ -403,6 +398,8 @@ class DonkeySecondaryBot(RandomBot):
 
     def get_info_about_country_by_name(self, name: str) -> Optional[dict[str, object]]:
         try:
+            name = "United States" if name.lower() in ["usa", "us", "united states of america"] else name
+
             apikey = os.getenv("COUNTRYAPI_API_KEY")
             params = {
                 "apikey": apikey
@@ -421,9 +418,7 @@ class DonkeySecondaryBot(RandomBot):
 
 
 # TODO: hosting
-# TODO: przetestuj MusicBota (2/3 done) -> pytesty zostały
-# TODO: przetestuj SecondaryBota (2/3 done) -> pytesty zostały
-# TODO: tests (2/10 done)
+# TODO: tests (9/10 done)
 
 bot = DonkeySecondaryBot(name="DonkeySecondaryBot")
 
