@@ -417,8 +417,6 @@ class SecondaryBot(RandomBot):
             return None
 
 
-# TODO: hosting
-
 bot = SecondaryBot(name="DonkeySecondaryBot")
 
 

@@ -4,9 +4,9 @@
 
 ## Invite to your server
 
-DonkeyMusicBot: <br>https://discord.com/api/oauth2/authorize?client_id=1151572540075032586&permissions=35461400849472&scope=bot%20applications.commands
+<strong>DonkeyMusicBot:</strong> <br>https://discord.com/api/oauth2/authorize?client_id=1151572540075032586&permissions=35461400849472&scope=bot%20applications.commands
 <br>
-DonkeySecondaryBot: <br>https://discord.com/api/oauth2/authorize?client_id=1151580275478896670&permissions=277092756544&scope=bot%20applications.commands
+<strong>DonkeySecondaryBot:</strong> <br>https://discord.com/api/oauth2/authorize?client_id=1151580275478896670&permissions=277092756544&scope=bot%20applications.commands
 
 ## Features
 
@@ -33,7 +33,7 @@ Both bots use discord slash commands. After typing '/' in discord, you will get 
 
 ### DonkeySecondaryBot commands:
 
-- /check_country_command
+- /check_country
 - /check_marvel_character
 - /check_movie
 - /random_joke
