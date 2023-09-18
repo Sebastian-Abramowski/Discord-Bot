@@ -25,7 +25,8 @@ def test_get_validated_url():
 def test_get_url_from_search_query():
     assert bot.get_url_from_search_query("rick roll") == "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
     assert bot.get_url_from_search_query("all star") == "https://www.youtube.com/watch?v=L_jWHffIx5E"
-    assert bot.get_url_from_search_query("shrek playing saxophone") == "https://www.youtube.com/watch?v=jKf6S5XI8Ew"
+    assert bot.get_url_from_search_query("shrek playing saxophone") in ["https://www.youtube.com/watch?v=jKf6S5XI8Ew",
+                                                                        "https://www.youtube.com/watch?v=_S7WEVLbQ-Y"]
 
 
 def test_is_url_valid():

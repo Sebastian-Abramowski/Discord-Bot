@@ -418,7 +418,6 @@ class SecondaryBot(RandomBot):
 
 
 # TODO: hosting
-# TODO: tests (9/10 done)
 
 bot = SecondaryBot(name="DonkeySecondaryBot")
 

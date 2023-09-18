@@ -1,6 +1,6 @@
 # DonkeyBot
 
-<img src="icon.png" alt="donkey image" width="24%">
+<img src="Assets/icon.png" alt="donkey image" width="24%">
 
 ## Features
 
