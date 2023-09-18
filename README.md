@@ -4,8 +4,7 @@
 
 ## Features
 
-Both bots use discord slash commands <br>
-After typing '/' in discord, you will get hints on how to use them
+Both bots use discord slash commands. After typing '/' in discord, you will get hints on how to use them.
 
 ### DonkeyMusicBot commands:
 
