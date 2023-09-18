@@ -70,6 +70,7 @@ def test_get_marvel_character_one_inexact_match():
 def test_get_marvel_character_non_existent1():
     not_groot = bot.get_marvel_character("Groot the Great")
     assert not_groot.num_of_matching_characters == 0
+    assert not_groot.partly_maching_names == []
     assert not not_groot.partly_maching_names
     assert not not_groot.name
 
@@ -77,6 +78,7 @@ def test_get_marvel_character_non_existent1():
 def test_get_marvel_character_non_existent2():
     donkey = bot.get_marvel_character("Donkey")
     assert donkey.num_of_matching_characters == 0
+    assert donkey.partly_maching_names == []
     assert not donkey.partly_maching_names
     assert not donkey.name
 
