@@ -27,7 +27,7 @@ class MusicBot(BasicBot):
                                    activity=discord.Activity(
                                        type=discord.ActivityType.listening, name="/play"))
 
-    async def join(self, interaction: discord.Interaction, without_response=False) -> None:
+    async def join(self, interaction: discord.Interaction, without_response: bool = False) -> None:
         if interaction.user.voice:
             channel = interaction.user.voice.channel
             bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
@@ -76,7 +76,7 @@ class MusicBot(BasicBot):
                 "`You are not in a voice channel.`")
 
     async def play(self, interaction: discord.Interaction, url_or_search_query: Optional[str],
-                   if_play_next_in_queue=False) -> None:
+                   if_play_next_in_queue: bool = False) -> None:
         self.if_queue_was_stopped = False
         # VoiceClient associated with the specified guild (there is one bot per server)
         bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
@@ -155,7 +155,7 @@ class MusicBot(BasicBot):
             await self.respond_or_followup(interaction, "`The bot is not conencted to any channel`")
 
     async def respond_or_followup(self, interaction: discord.Interaction, message: str,
-                                  embed: discord.Embed = None) -> None:
+                                  embed: Optional[discord.Embed] = None) -> None:
         try:
             if not interaction.is_expired():
                 await interaction.response.send_message(message, embed=embed)
@@ -415,7 +415,7 @@ class MusicBot(BasicBot):
             await self.play_audio_in_loop(interaction, bots_voice, url)
 
     async def handle_loop_audio_request(self, interaction: discord.Interaction,
-                                        url: Union[str, None], search_query: str) -> None:
+                                        url: Optional[str], search_query: str) -> None:
         self.if_looped = False
         if url:
             await self.loop_audio(interaction, url)
@@ -532,7 +532,7 @@ class MusicBot(BasicBot):
             await interaction.response.send_message(
                 "`The bot is currently not paused`")
 
-    async def stop(self, interaction: discord.Interaction, without_response=False) -> None:
+    async def stop(self, interaction: discord.Interaction, without_response: bool = False) -> None:
         bots_voice = discord.utils.get(self.voice_clients, guild=interaction.guild)
 
         if bots_voice and bots_voice.is_connected():

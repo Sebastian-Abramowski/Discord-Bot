@@ -1,6 +1,7 @@
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
 import copy
+from typing import Union
 
 
 def is_url_valid(url: str) -> bool:
@@ -12,7 +13,12 @@ def is_url_valid(url: str) -> bool:
         return False
 
 
-def format_wide_number(number: int, char_seperator: str) -> str:
+def format_wide_number(number: Union[int, str], char_seperator: str) -> str:
+    """
+    Returns formatted string of passed number
+    Example: input: 12345678, ' ' -> output: "12 345 678"
+    Example: input: "12345678", ' ' -> output: "12 345 678"
+    """
     if len(char_seperator) != 1:
         raise ValueError("Seperator must be a single character")
 

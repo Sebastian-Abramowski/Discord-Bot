@@ -373,7 +373,7 @@ class DonkeySecondaryBot(RandomBot):
             await interaction.response.send_message(embed=embed)
         else:
             await interaction.response.send_message(
-                f"`No information about the country called:` **{name}** `found`")
+                f"`No information about the country called` **{name}** `found`")
 
     def get_country_embed_info_by_name(self, name: str) -> Optional[discord.Embed]:
         try:
@@ -421,9 +421,8 @@ class DonkeySecondaryBot(RandomBot):
 
 
 # TODO: hosting
-# TODO: sprawdź type hinty (2/3 done)
 # TODO: przetestuj MusicBota (2/3 done) -> pytesty zostały
-# TODO: przetestuj SecondaryBota (1/3 done)
+# TODO: przetestuj SecondaryBota (2/3 done) -> pytesty zostały
 # TODO: tests (2/10 done)
 
 bot = DonkeySecondaryBot(name="DonkeySecondaryBot")
