@@ -2,6 +2,7 @@ import discord
 import yt_dlp as youtube_dl
 import asyncio
 import utilities
+import os
 from audio_queue import AudioQueue
 from typing import Union, Tuple, Optional
 from basic_bot import BasicBot
@@ -344,7 +345,7 @@ class MusicBot(BasicBot):
         self.if_queue_was_stopped = False
 
     async def play_sui(self, interaction: discord.Interaction) -> None:
-        await self.play_from_file(interaction, "Assets/sui.mp3", "SUUUUUUI")
+        await self.play_from_file(interaction, os.path.join("Assets", "sui.mp3"), "SUUUUUUI")
 
     async def play_from_file(self, interaction: discord.Interaction, path_to_audio: str,
                              message_after_playing: str) -> None:

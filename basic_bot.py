@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+import os
 
 
 # commands.Bot is a subclass of discord.Client
@@ -41,7 +42,7 @@ class BasicBot(commands.Bot):
             await message.reply("I invoke my right not to answer this question")
         else:
             embed = discord.Embed(color=discord.Color.dark_green(), title="Who asked?")
-            file = discord.File("Assets/broccoli.png", filename="broccoli.png")
+            file = discord.File(os.path.join("Assets", "broccoli.png"), filename="broccoli.png")
             embed.set_image(url="attachment://broccoli.png")
             await message.reply(file=file, embed=embed)
 
