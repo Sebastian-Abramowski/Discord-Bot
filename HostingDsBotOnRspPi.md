@@ -122,8 +122,13 @@ sudo nano /etc/dhcpcd.conf
 Here add to the existing file:
 
 ```bash
-interface eht0
+# Static IP configuration for eth0 and wlan0 with the same IP address
 interface wlan0
+static ip_address=<address_ip_that_you_want_to_set_to>
+static routers=<address_ip_of_your_router>
+static domain_name_servers=<some DNS e.g. 8.8.8.8>
+
+interface eth0
 static ip_address=<address_ip_that_you_want_to_set_to>
 static routers=<address_ip_of_your_router>
 static domain_name_servers=<some DNS e.g. 8.8.8.8>
