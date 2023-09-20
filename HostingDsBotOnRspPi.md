@@ -59,6 +59,7 @@ After=multi-user.target
 [Service]
 Type=simple
 User=<user_name_is_raspberry_pi>
+WorkingDirectory=/absolute/path/to/your/working/directory
 ExecStart=python <absolute_path_to_your_file.py_that_runs_the_bot>
 Restart=always
 
@@ -97,10 +98,11 @@ If you want to check if you did everything correctly, reboot the system for exam
 Other comments that might be helpful in case of some problems
 
 ```bash
-system daemon-reload # if you changed content of .service file and you wish to reload them
+sudo systemctl daemon-reload # if you changed content of .service file and you wish to reload them
 sudo systemctl stop <service_name> # if you want to stop the service
 sudo systemctl kill <service_name> # if you want to simulate some problems in a service, if you have set 'Restart=always' in .service file, then the program will be restarted
 sudo systemctl disable <service_name> # if you want to disable service, so that it wouldn't start automatically
+sudo systemctl restart <service_name>.service # if you want to restart your program put in service
 ```
 
 ## Appendix: Connecting to Raspberry Pi through computer with the same WIFI connection
