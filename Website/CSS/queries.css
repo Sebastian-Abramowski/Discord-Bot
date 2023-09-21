@@ -1,0 +1,18 @@
+/* rem and em do not depend on html font-size in media queries */
+/* 1rem = 1em = 16px */
+/* It's safer to use em in media queries */
+
+/*
+BREAKPOINTS:
+- BELOW px
+- BELOW px
+- BELOW px
+- BELOW px
+- BELOW px
+- BELOW px
+
+(many phones are between 350 - 450px)
+The smallest width of the phone you should consider when designing
+a webiste is typically 320px
+
+*/
