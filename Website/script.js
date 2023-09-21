@@ -3,26 +3,22 @@ const yearEl = document.querySelector(".year");
 const currentYear = new Date().getFullYear();
 yearEl.textContent = currentYear;
 
-// Smooth scrolling animation
-const allLinks = document.querySelectorAll("a:link");
+// Adjust widths of buttons inside .bot-box (based on the first one)
+const firstBotBox = document.querySelector(".bot-box");
+const buttonsInBotBox = firstBotBox.querySelectorAll(".btn-custom");
 
-allLinks.forEach(function (link) {
-  link.addEventListener("click", function (e) {
-    e.preventDefault();
-    const href = link.getAttribute("href");
+let maxWidth = 0;
+buttonsInBotBox.forEach(function (button) {
+  buttonWidth = button.offsetWidth;
+  if (buttonWidth > maxWidth) {
+    maxWidth = buttonWidth;
+  }
+});
 
-    // Scroll back to top
-    if (href === "#")
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    // Scroll to other link
-    if (href !== "#" && href.startsWith("#")) {
-      const sectionEl = document.querySelector(href);
-      sectionEl.scrollIntoView({
-        behavior: "smooth",
-      });
-    }
+const allBotBoxes = document.querySelectorAll(".bot-box");
+allBotBoxes.forEach(function (botBox) {
+  const allButtons = botBox.querySelectorAll(".btn-custom");
+  allButtons.forEach(function (button) {
+    button.style.width = maxWidth + "px";
   });
 });
