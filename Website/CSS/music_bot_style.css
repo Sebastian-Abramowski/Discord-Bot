@@ -15,7 +15,12 @@
 }
 
 .bot-image {
-  width: 40rem;
+  width: 32rem;
+  border-radius: 9px;
+}
+
+.bot-image-section {
+  width: 80rem;
   border-radius: 9px;
 }
 
