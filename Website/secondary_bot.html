@@ -23,12 +23,185 @@
     />
     <link rel="stylesheet" href="CSS/basic.css" />
     <link rel="stylesheet" href="CSS/general.css" />
-    <link rel="stylesheet" href="CSS/header_plus_navigation.css" />
+    <link rel="stylesheet" href="CSS/header_navigation_footer.css" />
+    <link rel="stylesheet" href="CSS/scroll_bar.css" />
+    <link rel="stylesheet" href="CSS/music_bot_style.css" />
+    <link rel="stylesheet" href="CSS/queries_music_bot.css" />
     <script defer src="smooth_scrolling.js"></script>
+    <script defer src="current_year.js"></script>
+    <script defer src="clipboard_info.js"></script>
     <title>DonkeySecondaryBot</title>
   </head>
   <body>
-    secondary
+    <header class="header sticky-top">
+      <div class="logo-container">
+        <img class="logo" alt="Logo" src="img/icon2.png" />
+        <h1 class="title">DonkeySecondaryBot</h1>
+      </div>
+      <nav>
+        <ul class="main-nav-list">
+          <li>
+            <a
+              href="sec_bot_commands.html"
+              class="btn-custom btn--full-dark-reversed"
+              >Commands</a
+            >
+          </li>
+          <li>
+            <a
+              href="https://discord.com/api/oauth2/authorize?client_id=1151580275478896670&permissions=277092756544&scope=bot%20applications.commands"
+              target="_blank"
+              class="btn-custom btn--full"
+              ><div class="ds-logo-container">
+                <ion-icon name="logo-discord"></ion-icon
+                ><span>Add to discord</span>
+              </div></a
+            >
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <section class="section">
+      <div class="container-custom grid grid--2-cols">
+        <div class="bot-hero-info center-with-flexbox">
+          <h2 class="bot-title">
+            Use information from various APIs and have fun
+          </h2>
+          <p class="bot-description">
+            DonkeySecondaryBot is a bot that makes use of various APIs and have
+            some random commands. It is easy to easy, since it makes use of
+            slash commands in discord. Give it a try!
+          </p>
+          <div class="bot-hero-buttons center-with-flexbox">
+            <a
+              href="https://discord.com/api/oauth2/authorize?client_id=1151580275478896670&permissions=277092756544&scope=bot%20applications.commands"
+              target="_blank"
+              class="btn-custom btn--full"
+              ><div class="ds-logo-container">
+                <ion-icon name="logo-discord"></ion-icon
+                ><span>Add to discord</span>
+              </div></a
+            >
+            <a href="#first-section" class="btn-custom btn--full-dark-reversed"
+              >See features</a
+            >
+          </div>
+        </div>
+        <div class="bot-hero-visual-info grid-element-to-right">
+          <img class="bot-image" alt="Bot image" src="img/icon2.png" />
+          <a
+            href="https://github.com/Sebastian-Abramowski/Discord-Bot"
+            target="_blank"
+            ><ion-icon name="logo-github" class="icon dark-icon"></ion-icon
+          ></a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section dark-section" id="first-section">
+      <div class="container-custom">
+        <p class="section-title margin-bottom-after-section-title">
+          Get info from various APIs
+        </p>
+        <div class="grid grid--2-cols">
+          <p class="section-info">
+            The bot lets you check country, marvel character and movie
+            information by giving some name/title. Furthermore, you can get
+            random joke, riddle, fact or some image through usage of many public
+            APIs. Give it a try if you want to!
+          </p>
+          <img
+            class="bot-image-section center-item-in-grid grid-element-to-right"
+            alt="Bot image"
+            src="img/bot-sec-apis-example.png"
+          />
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container-custom">
+        <p class="section-title margin-bottom-after-section-title">
+          Many possibilites
+        </p>
+        <div class="grid grid--2-cols">
+          <img
+            class="bot-image-section image-on-left"
+            alt="Bot image"
+            src="img/bot-sec-commands.png"
+          />
+          <div class="section-info-with-link flex-columns">
+            <p class="section-info">
+              Commands give you freedom of managing music as you wish. There are
+              <span class="important-number">9</span> different commands, if you
+              wish to know more about them, click button below.
+            </p>
+            <a
+              href="sec_bot_commands.html"
+              class="btn-custom btn--full-dark-reversed"
+              >Commands</a
+            >
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section dark-section">
+      <div class="container-custom">
+        <p class="section-title margin-bottom-after-section-title">
+          Active 24/7
+        </p>
+        <div class="grid grid--2-cols">
+          <p class="section-info">
+            The bot is always active and is looking forward for you to use him
+            as you wish. You can see his status by looking at his discord
+            account.
+          </p>
+          <img
+            class="bot-image-section center-item-in-grid grid-element-to-right"
+            alt="Bot image"
+            src="img/bot-sec-online.png"
+          />
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-ct-us">
+      <div class="container-custom section-contact-us">
+        <p class="section-title margin-bottom-after-section-title">
+          If the bot is down, you can contact us:
+        </p>
+        <div class="contact center-with-flexbox input-container">
+          <div class="center-with-flexbox">
+            <ion-icon name="logo-discord"></ion-icon
+            ><span
+              ><input
+                type="text"
+                value="yhrybdhrt#0251"
+                class="form-control input"
+            /></span>
+          </div>
+          <div class="copy-button-container">
+            <button class="btn-custom copy-button">
+              <ion-icon name="copy-outline" class="copy-icon"></ion-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="footer-container">
+        <p class="copyright">Copyright &copy; <span class="year"></span></p>
+        <a
+          href="https://github.com/Sebastian-Abramowski/Discord-Bot"
+          target="_blank"
+          ><ion-icon name="logo-github" class="icon"></ion-icon
+        ></a>
+      </div>
+    </footer>
+
     <!-- BOOTSTRAP -->
     <script
       src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
@@ -46,6 +219,14 @@
       crossorigin="anonymous"
     ></script>
     <!--  -->
+    <script
+      type="module"
+      src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"
+    ></script>
+    <script
+      nomodule
+      src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"
+    ></script>
     <script
       type="module"
       src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"

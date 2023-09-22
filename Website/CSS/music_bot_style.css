@@ -141,7 +141,7 @@
   background-color: inherit;
   color: inherit;
   font-size: 2.4rem;
-  /* border: none; */
+  border: none;
   /* FIXED SIZE ON INPUT */
   width: 240px;
 }
