@@ -1,0 +1,113 @@
+/* rem and em do not depend on html font-size in media queries */
+/* 1rem = 1em = 16px */
+/* It's safer to use em in media queries */
+
+/*
+BREAKPOINTS:
+- BELOW 1312px
+- BELOW 1136px
+- BELOW 864px
+- BELOW 752px
+- BELOW 576px
+- BELOW px
+
+(many phones are between 350 - 450px)
+The smallest width of the phone you should consider when designing
+a webiste is typically 320px
+
+*/
+
+@media (max-width: 82em) {
+  .bot-image-section {
+    width: 70rem;
+    border-radius: 9px;
+  }
+}
+
+@media (max-width: 71em) {
+  .grid--2-cols {
+    grid-template-columns: 1fr;
+  }
+  .grid {
+    row-gap: 4.8rem;
+  }
+  .grid-element-to-right {
+    justify-self: center;
+  }
+  .image-on-left {
+    justify-self: center;
+  }
+}
+
+@media (max-width: 54em) {
+  .bot-image-section {
+    width: 100%;
+  }
+  .bot-image {
+    width: 24rem;
+  }
+  .title {
+    font-size: 2rem;
+  }
+  .main-nav-list {
+    gap: 1.2rem;
+  }
+}
+
+@media (max-width: 47em) {
+  .header {
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #2c2e32;
+    padding: 2.4rem 4.8rem;
+    height: auto;
+    row-gap: 1.2rem;
+  }
+  /* .main-nav-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 1.2rem;
+    list-style: none;
+    align-items: center;
+  } */
+  .section {
+    padding: 4.6rem 4.6rem;
+  }
+  /* .header .btn-custom {
+    width: 50%;
+  } */
+  .section-title {
+    font-size: 3.2rem;
+  }
+  .bot-title {
+    font-size: 4rem;
+    font-weight: 500;
+  }
+}
+
+@media (max-width: 36em) {
+  .section-title {
+    font-size: 2.6rem;
+  }
+  .bot-title {
+    font-size: 3.2rem;
+  }
+  .container-custom {
+    margin: 0 auto;
+    padding: 1.2rem 1.2rem;
+  }
+  .section {
+    padding: 2.4rem 0;
+  }
+
+  .section-ct-us {
+    padding: 2.4rem 1.2rem;
+  }
+  .contact,
+  .input,
+  .copy-icon {
+    font-size: 2.4rem;
+  }
+}
