@@ -9,7 +9,8 @@ BREAKPOINTS:
 - BELOW 864px
 - BELOW 752px
 - BELOW 576px
-- BELOW px
+- BELOW 512px
+- BELOW 448px
 
 (many phones are between 350 - 450px)
 The smallest width of the phone you should consider when designing
@@ -98,6 +99,9 @@ a webiste is typically 320px
     margin: 0 auto;
     padding: 1.2rem 1.2rem;
   }
+  .header {
+    padding: 1.2rem 1.2rem;
+  }
   .section {
     padding: 2.4rem 0;
   }
@@ -109,5 +113,36 @@ a webiste is typically 320px
   .input,
   .copy-icon {
     font-size: 2.4rem;
+  }
+}
+
+@media (max-width: 32em) {
+  .section-contact-us .section-title {
+    font-size: 2rem;
+  }
+  .input {
+    font-size: 1.4rem;
+    width: 140px;
+  }
+  .contact {
+    margin-top: 1.2rem;
+  }
+  .btn-custom {
+    font-size: 1.6rem !important;
+  }
+}
+
+@media (max-width: 28em) {
+  .btn-custom {
+    font-size: 1.2rem !important;
+  }
+  .section-contact-us .section-title {
+    font-size: 1.8rem;
+  }
+  .margin-bottom-after-section-title {
+    margin-bottom: 2rem;
+  }
+  html {
+    font-size: 56.25%;
   }
 }
