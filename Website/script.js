@@ -1,8 +1,3 @@
-// Set current year
-const yearEl = document.querySelector(".year");
-const currentYear = new Date().getFullYear();
-yearEl.textContent = currentYear;
-
 // Adjust widths of buttons inside .bot-box (based on the first one)
 const firstBotBox = document.querySelector(".bot-box");
 const buttonsInBotBox = firstBotBox.querySelectorAll(".btn-custom");

@@ -3,6 +3,7 @@ const allLinks = document.querySelectorAll("a:link");
 
 allLinks.forEach(function (link) {
   link.addEventListener("click", function (e) {
+    const href = link.getAttribute("href");
     if (href.startsWith("#")) {
       e.preventDefault();
       const href = link.getAttribute("href");
