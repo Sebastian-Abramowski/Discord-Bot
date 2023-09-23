@@ -7,6 +7,7 @@ BREAKPOINTS:
 - BELOW 1200px
 - BELOW 816px
 - BELOW 752px
+- BELOW 672px
 - BELOW 560px
 - BELOW 416px
 - BELOW 368px
@@ -38,6 +39,12 @@ a webiste is typically 320px
   .bot-box {
     padding: 1.2rem;
   }
+  .main-nav-list {
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 42em) {
   .main-nav-list {
     display: none;
   }

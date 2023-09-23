@@ -50,3 +50,9 @@
   text-align: center;
   line-height: 1.6;
 }
+
+.bot-buttons-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
