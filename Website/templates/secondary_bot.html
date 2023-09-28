@@ -1,0 +1,73 @@
+{% extends "bot_layout.html" %}
+
+{% block meta_description %}
+<meta
+    name="description"
+    content="Information about discord DonkeySecondaryBot"
+/>
+{% endblock meta_description %}
+
+{% block icons %}
+<link rel="icon" href="{{ url_for('static', filename='img/icon2_32.png') }}" />
+<link rel="apple-touch-icon" href="i{{ url_for('static', filename='img/icon2_180.png') }}" />
+{% endblock icons %}
+
+{% block logo %}
+<img class="logo" alt="Logo" src="{{ url_for('static', filename='img/icon2.png') }}" />
+{% endblock %}
+
+{% block bot_image %}
+<img class="bot-image" alt="Bot image" src="{{ url_for('static', filename='img/icon2.png') }}" />
+{% endblock bot_image %}
+
+{% block first_section_content %}
+<p class="section-title margin-bottom-after-section-title">
+    Get info from various APIs
+</p>
+<div class="grid grid--2-cols">
+    <p class="section-info">
+        The bot lets you check country, marvel character and movie
+        information by giving some name/title. Furthermore, you can get
+        random joke, riddle, fact or some image through usage of many public
+        APIs. Give it a try if you want to!
+    </p>
+    <img
+        class="bot-image-section center-item-in-grid grid-element-to-right"
+        alt="Bot image"
+        src="{{ url_for('static', filename='img/bot-sec-apis-example.png') }}"
+    />
+</div>
+{% endblock first_section_content %}
+
+{% block second_section_content %}
+<p class="section-title margin-bottom-after-section-title">
+    Many possibilites
+</p>
+<div class="grid grid--2-cols">
+    <img
+        class="bot-image-section image-on-left"
+        alt="Bot image"
+        src="img/bot-sec-commands.png"
+    />
+    <div class="section-info-with-link flex-columns">
+        <p class="section-info">
+        Commands give you freedom of doing what you want. There are
+        <span class="important-number">9</span> different commands. If you
+        wish to know more about them, click button below.
+        </p>
+        <a
+        href="sec_bot_commands.html"
+        class="btn-custom btn--full-dark-reversed"
+        >Commands</a
+        >
+    </div>
+</div>
+{% endblock second_section_content %}
+
+{% block bot_online_image %}
+<img
+    class="bot-image-section center-item-in-grid grid-element-to-right"
+    alt="Bot image"
+    src="img/bot-sec-online.png"
+/>
+{% endblock bot_online_image %}

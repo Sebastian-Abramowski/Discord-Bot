@@ -1,20 +1,22 @@
 {% extends "basic_template.html" %}
 
+{% block meta_description %}
+<meta name="description" content="Presenting discord DonkeyBots" />
+{% endblock meta_description %}
+
 {% block icons %}
 <link rel="icon" href="{{ url_for('static', filename='img/icon32.png') }}" />
 <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/icon180.png') }}" />
 {% endblock icons %}
 
 {% block link_additional_files %}
-<link rel="stylesheet" href="{{ url_for('static', filename='CSS/home_page_style.css') }}" />
-<link rel="stylesheet" href="{{ url_for('static', filename='CSS/home_page_queries.css') }}" />
+<link rel="stylesheet" href="{{ url_for('static', filename='CSS/home_style.css') }}" />
+<link rel="stylesheet" href="{{ url_for('static', filename='CSS/home_queries.css') }}" />
 <script defer src="{{ url_for('static', filename='JS/script.js') }}"></script>
 <script defer src="{{ url_for('static', filename='JS/current_year.js') }}"></script>
 {% endblock link_additional_files %}
 
-{% block title %}
-<title>DonkeyBots</title>
-{% endblock title %}
+<title>{{ title }}</title>
 
 {% block content %}
 <header class="header sticky-top">
@@ -22,7 +24,7 @@
       <a class="navbar-brand" href="#">
         <div class="center-with-flexbox flex-small-gap">
           <img class="logo" alt="Logo" src="{{ url_for('static', filename='img/icon.png') }}" />
-          <span class="title">DonkeyBots</span>
+          <span class="title">{{ title }}</span>
         </div>
       </a>
       <button
@@ -38,8 +40,8 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <div class="navbar-nav ml-auto">
-          <a class="nav-link" href="music_bot.html">DonkeyMusicBot</a>
-          <a class="nav-link" href="secondary_bot.html">DonkeySecondaryBot</a>
+          <a class="nav-link" href="/music_bot">DonkeyMusicBot</a>
+          <a class="nav-link" href="/secondary_bot">DonkeySecondaryBot</a>
         </div>
       </div>
     </nav>
@@ -67,12 +69,12 @@
             urls
           </p>
           <div class="bot-buttons-container">
-            <a href="music_bot.html" class="btn-custom btn--full-dark"
+            <a href="/music_bot" class="btn-custom btn--full-dark"
               >Learn more</a
             >
 
             <a
-              href="music_bot_commands.html"
+              href="/music_bot_commands"
               class="btn-custom btn--full-dark"
               >Commands</a
             >
@@ -105,11 +107,11 @@
             Use various APIs and try many commands based on randomness
           </p>
           <div class="bot-buttons-container">
-            <a href="secondary_bot.html" class="btn-custom btn--full-dark"
+            <a href="/secondary_bot" class="btn-custom btn--full-dark"
               >Learn more</a
             >
 
-            <a href="sec_bot_commands.html" class="btn-custom btn--full-dark"
+            <a href="/sec_bot_commands" class="btn-custom btn--full-dark"
               >Commands</a
             >
 

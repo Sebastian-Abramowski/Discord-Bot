@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Presenting discord DonkeyBots" />
+    {% block meta_description %} {% endblock %}
 
     {% block icons %} {% endblock %}
 
@@ -32,8 +32,6 @@
     />
 
     {% block link_additional_files %} {% endblock %}
-
-    {% block title %} {% endblock %}
   </head>
   <body>
     {% block content %} {% endblock %}
