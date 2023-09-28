@@ -14,7 +14,7 @@
 
 {% block logo %}
 <img class="logo" alt="Logo" src="{{ url_for('static', filename='img/icon2.png') }}" />
-{% endblock %}
+{% endblock logo %}
 
 {% block bot_image %}
 <img class="bot-image" alt="Bot image" src="{{ url_for('static', filename='img/icon2.png') }}" />
@@ -47,7 +47,7 @@
     <img
         class="bot-image-section image-on-left"
         alt="Bot image"
-        src="img/bot-sec-commands.png"
+        src="{{ url_for('static', filename='img/bot-sec-commands.png') }}"
     />
     <div class="section-info-with-link flex-columns">
         <p class="section-info">
@@ -68,6 +68,6 @@
 <img
     class="bot-image-section center-item-in-grid grid-element-to-right"
     alt="Bot image"
-    src="img/bot-sec-online.png"
+    src="{{ url_for('static', filename='img/bot-sec-online.png') }}"
 />
 {% endblock bot_online_image %}
