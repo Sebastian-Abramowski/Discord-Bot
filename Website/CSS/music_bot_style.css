@@ -1,3 +1,11 @@
+/* ADJUST HEADER */
+
+.navbar-nav {
+  gap: 1.6rem;
+}
+
+/* ------------- */
+
 .btn--full-dark-reversed:hover,
 .btn--full-dark-reversed:active {
   background-color: #232528;

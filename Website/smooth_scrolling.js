@@ -9,18 +9,23 @@ allLinks.forEach(function (link) {
       const href = link.getAttribute("href");
 
       // Scroll back to top
-      if (href === "#")
+      if (href === "#") {
         window.scrollTo({
           top: 0,
           behavior: "smooth",
         });
+      }
       // Scroll to other link
-      if (href !== "#" && href.startsWith("#")) {
+      else {
         const sectionEl = document.querySelector(href);
         sectionEl.scrollIntoView({
           behavior: "smooth",
         });
       }
+      //Remove focus on some element
+      setTimeout(function () {
+        document.activeElement.blur();
+      }, 1000);
     }
   });
 });

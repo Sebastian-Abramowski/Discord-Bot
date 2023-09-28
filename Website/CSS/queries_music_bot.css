@@ -56,29 +56,9 @@ a webiste is typically 320px
 }
 
 @media (max-width: 47em) {
-  .header {
-    display: grid;
-    grid-template-columns: 1fr;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #2c2e32;
-    padding: 2.4rem 4.8rem;
-    height: auto;
-    row-gap: 1.2rem;
-  }
-  /* .main-nav-list {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    column-gap: 1.2rem;
-    list-style: none;
-    align-items: center;
-  } */
   .section {
     padding: 4.6rem 4.6rem;
   }
-  /* .header .btn-custom {
-    width: 50%;
-  } */
   .section-title {
     font-size: 3.2rem;
   }

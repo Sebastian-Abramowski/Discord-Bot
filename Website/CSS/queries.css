@@ -44,12 +44,6 @@ a webiste is typically 320px
   }
 }
 
-@media (max-width: 42em) {
-  .main-nav-list {
-    display: none;
-  }
-}
-
 @media (max-width: 35em) {
   .bots-cointer {
     padding: 3.2rem 0.2rem;

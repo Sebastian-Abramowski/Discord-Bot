@@ -34,31 +34,42 @@
   </head>
   <body>
     <header class="header sticky-top">
-      <div class="logo-container">
-        <img class="logo" alt="Logo" src="img/icon2.png" />
-        <h1 class="title">DonkeySecondaryBot</h1>
-      </div>
-      <nav>
-        <ul class="main-nav-list">
-          <li>
+      <nav class="navbar navbar-expand-md navbar-dark">
+        <a class="navbar-brand" href="#">
+          <div class="center-with-flexbox flex-small-gap">
+            <img class="logo" alt="Logo" src="img/icon2.png" />
+            <span class="title">DonkeySecondaryBot</span>
+          </div>
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-toggle="collapse"
+          data-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <div class="navbar-nav ml-auto">
             <a
               href="sec_bot_commands.html"
               class="btn-custom btn--full-dark-reversed"
               >Commands</a
             >
-          </li>
-          <li>
             <a
               href="https://discord.com/api/oauth2/authorize?client_id=1151580275478896670&permissions=277092756544&scope=bot%20applications.commands"
               target="_blank"
-              class="btn-custom btn--full"
+              class="btn-custom btn--full half-width"
               ><div class="ds-logo-container">
                 <ion-icon name="logo-discord"></ion-icon
                 ><span>Add to discord</span>
               </div></a
             >
-          </li>
-        </ul>
+          </div>
+        </div>
       </nav>
     </header>
 

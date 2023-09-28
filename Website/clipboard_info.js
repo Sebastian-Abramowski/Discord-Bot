@@ -1,3 +1,4 @@
+// Copy the input's text to clipboard and show information that it was saved (.active class)
 let inputContainer = document.querySelector(".input-container");
 let button = inputContainer.querySelector(".copy-button");
 button.addEventListener("click", function () {

@@ -1,23 +1,30 @@
 /* HEADER */
 
 .header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   background-color: #2c2e32;
-  height: 8.6rem;
-  padding: 0 4.8rem;
-}
-
-.logo-container {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  gap: 1.2rem;
+  padding: 1.2rem 2.4rem;
 }
 
 .title {
   color: #5764f1;
+  font-size: 2rem;
+  font-weight: 500;
+}
+
+.nav-link {
+  font-size: 1.8rem;
+}
+
+.navbar-nav {
+  gap: 0.8rem;
+}
+
+.navbar-collapse {
+  transition: all 0.3s;
+}
+
+.show {
+  margin-top: 1.4rem;
 }
 
 .logo {

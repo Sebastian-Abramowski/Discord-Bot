@@ -28,22 +28,31 @@
     <title>Title</title>
   </head>
   <body>
-    <header class="header">
-      <div class="logo-container">
-        <img class="logo" alt="Logo" src="img/icon.png" />
-        <h1 class="title">DonkeyBots</h1>
-      </div>
-      <nav>
-        <ul class="main-nav-list">
-          <li>
-            <a class="main-nav-link" href="music_bot.html">DonkeyMusicBot</a>
-          </li>
-          <li>
-            <a class="main-nav-link" href="secondary_bot.html"
-              >DonkeySecondaryBot</a
-            >
-          </li>
-        </ul>
+    <header class="header sticky-top">
+      <nav class="navbar navbar-expand-md navbar-dark">
+        <a class="navbar-brand" href="#">
+          <div class="center-with-flexbox flex-small-gap">
+            <img class="logo" alt="Logo" src="img/icon.png" />
+            <span class="title">DonkeyBots</span>
+          </div>
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-toggle="collapse"
+          data-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <div class="navbar-nav ml-auto">
+            <a class="nav-link" href="music_bot.html">DonkeyMusicBot</a>
+            <a class="nav-link" href="secondary_bot.html">DonkeySecondaryBot</a>
+          </div>
+        </div>
       </nav>
     </header>
 

@@ -57,6 +57,10 @@
   align-items: center;
 }
 
+.flex-small-gap {
+  gap: 0.75rem;
+}
+
 .center-item-in-grid {
   justify-self: center;
   align-self: center;
