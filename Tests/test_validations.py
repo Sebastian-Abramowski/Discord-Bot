@@ -1,4 +1,4 @@
-from utilities import is_url_valid
+from utilities.validation import is_url_valid
 
 
 def test_valid_url():

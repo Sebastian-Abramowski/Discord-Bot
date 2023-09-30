@@ -1,4 +1,4 @@
-from marvel_character import MarvelCharacter
+from secondary_bot.marvel_character import MarvelCharacter
 
 
 def test_update_with_found_result_not_successful():

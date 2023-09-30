@@ -1,11 +1,14 @@
+import os
+import asyncio
+from typing import Union, Tuple, Optional
+
 import discord
 import yt_dlp as youtube_dl
-import asyncio
-import utilities
-import os
-from audio_queue import AudioQueue
-from typing import Union, Tuple, Optional
-from basic_bot import BasicBot
+
+from bot.basic_bot import BasicBot
+from utilities.audio_queue import AudioQueue
+import utilities.validation
+
 
 FFMPEG_OPTIONS = {
     "before_options": "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5",
@@ -203,7 +206,7 @@ class MusicBot(BasicBot):
         if self.is_url_youtube_playlist(url):
             return False, "`Passed url leads to youtube playlist. We advise to use single videos`"
 
-        if not utilities.is_url_valid(url):
+        if not utilities.validation.is_url_valid(url):
             return False, f"`You passed invalid url. Passed url: {url}`"
         return True, None
 

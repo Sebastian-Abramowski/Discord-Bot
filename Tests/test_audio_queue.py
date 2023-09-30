@@ -1,4 +1,4 @@
-from audio_queue import AudioQueue
+from utilities.audio_queue import AudioQueue
 
 
 def test_str_queue():

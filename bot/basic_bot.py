@@ -1,6 +1,7 @@
+import os
+
 import discord
 from discord.ext import commands
-import os
 
 
 # commands.Bot is a subclass of discord.Client

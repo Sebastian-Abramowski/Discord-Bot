@@ -1,14 +1,16 @@
-import discord
+import os
 import random
 import requests
-import dotenv
-import os
 import time
 import hashlib
-import utilities
-from marvel_character import MarvelCharacter
-from basic_bot import BasicBot
 from typing import Union, Tuple, NamedTuple, Optional
+
+import discord
+import dotenv
+
+from secondary_bot.marvel_character import MarvelCharacter
+from bot.basic_bot import BasicBot
+import utilities.format
 
 dotenv.load_dotenv()
 
@@ -376,7 +378,7 @@ class SecondaryBot(RandomBot):
             country_name = country_info["name"]
             capital = country_info["capital"]
             region = country_info["region"]
-            population = utilities.format_wide_number(country_info["population"], " ")
+            population = utilities.format.format_wide_number(country_info["population"], " ")
             timezone = ", ".join(list(country_info["timezones"]))
             languages = ", ".join(list(country_info["languages"].values()))
             flag = country_info["flag"]["large"]

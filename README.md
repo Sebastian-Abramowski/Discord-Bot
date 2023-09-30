@@ -55,15 +55,18 @@ You must have the <strong>ffmpeg</strong> executable in your path environment va
 
 ## Environment Variables
 
-To run this project, you will need to add the following environment variables to your .env file
+To run this project, you will need to add the following environment variables to your .env files
 
-For DonkeyMusicBot:
+For DonkeyMusicBot (inside main folder):
 
 - `DONKEY_MUSIC_BOT_TOKEN`
 
-For DonkeySecondaryBot:
+For DonkeySecondaryBot (inside main folder):
 
 - `DONKEY_SECONDARY_BOT_TOKEN`
+
+For DonkeySecondaryBot(inside 'secondary_bot' folder)
+
 - `URL_TO_MY_REPO`
 - `API_NINJAS_API_KEY`
 - `THECATAPI_API_KEY`

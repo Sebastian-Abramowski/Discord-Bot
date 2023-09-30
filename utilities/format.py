@@ -1,16 +1,5 @@
-from django.core.validators import URLValidator
-from django.core.exceptions import ValidationError
 import copy
 from typing import Union
-
-
-def is_url_valid(url: str) -> bool:
-    validate = URLValidator()
-    try:
-        validate(url)
-        return True
-    except ValidationError:
-        return False
 
 
 def format_wide_number(number: Union[int, str], char_seperator: str) -> str:

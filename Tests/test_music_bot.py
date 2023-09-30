@@ -1,4 +1,4 @@
-from music_bot import MusicBot
+from music_bot.music_bot import MusicBot
 # flake8: noqa
 
 bot = MusicBot(name="Jo")

@@ -1,4 +1,4 @@
-from secondary_bot import SecondaryBot
+from secondary_bot.secondary_bot import SecondaryBot
 
 bot = SecondaryBot(name="Jo")
 # Testing if API calls return something
