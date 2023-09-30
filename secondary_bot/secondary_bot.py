@@ -147,6 +147,9 @@ class RandomBot(BasicBot):
             print("[FECTHING-RANDOM-CAT-IMAGE-ERROR] " + str(e))
             return None
 
+    def reset_attributes(self) -> None:
+        pass
+
 
 class SecondaryBot(RandomBot):
     def __init__(self, name: str):
@@ -417,6 +420,9 @@ class SecondaryBot(RandomBot):
         except Exception as e:
             print("[ERROR] " + str(e))
             return None
+
+    def reset_attributes(self) -> None:
+        pass
 
 
 bot = SecondaryBot(name="DonkeySecondaryBot")

@@ -1,11 +1,12 @@
 import os
+from abc import ABC, abstractmethod
 
 import discord
 from discord.ext import commands
 
 
 # commands.Bot is a subclass of discord.Client
-class BasicBot(commands.Bot):
+class BasicBot(commands.Bot, ABC):
     def __init__(self, name: str):
         super().__init__(command_prefix='.', intents=discord.Intents.all())
         self.name = name
@@ -66,9 +67,6 @@ class BasicBot(commands.Bot):
                 await bots_voice.disconnect()
                 self.reset_attributes()
 
+    @abstractmethod
     def reset_attributes(self) -> None:
-        info = ("[POTENCIAL-PROBLEM] If your bot have some additional "
-                "attributes that you want to reset "
-                "after disconnecting the bot, then you should "
-                "overwrite 'reset_attributes' method...")
-        print(info)
+        pass
