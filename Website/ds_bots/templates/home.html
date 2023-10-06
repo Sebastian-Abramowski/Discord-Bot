@@ -13,7 +13,6 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='CSS/home_style.css') }}" />
 <link rel="stylesheet" href="{{ url_for('static', filename='CSS/home_queries.css') }}" />
 <script defer src="{{ url_for('static', filename='JS/script.js') }}"></script>
-<script defer src="{{ url_for('static', filename='JS/current_year.js') }}"></script>
 {% endblock link_additional_files %}
 
 {% block content %}
@@ -103,15 +102,7 @@
         </div>
       </div>
     </section>
-    <footer class="footer">
-      <div class="footer-container">
-        <p class="copyright">Copyright &copy; <span class="year"></span></p>
-        <a
-          href="https://github.com/Sebastian-Abramowski/Discord-Bot"
-          target="_blank"
-          ><ion-icon name="logo-github" class="icon"></ion-icon
-        ></a>
-      </div>
-    </footer>
+
+    {% include 'footer.html' %}
 </main>
 {% endblock content %}

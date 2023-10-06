@@ -1,0 +1,39 @@
+.commands-container-whole {
+  display: flex;
+  gap: 15.6rem;
+  font-size: 3.2rem;
+  min-height: 85vh;
+}
+
+.command-types-container {
+  display: flex;
+  flex-direction: column;
+  gap: 3.2rem;
+}
+
+.commands-container {
+  display: flex;
+  flex-direction: column;
+  font-size: 2.4rem;
+  gap: 3.2rem;
+}
+
+.commmand-element {
+  display: flex;
+  gap: 2.4rem;
+  align-items: center;
+}
+
+.mrg-bottom-medium {
+  margin-bottom: 4.8rem;
+}
+
+.mrg-top-small {
+  margin-top: 3.2rem;
+}
+
+.current-category {
+  pointer-events: none;
+  background-color: #2c2e32 !important;
+  border: 5px solid #28292d;
+}

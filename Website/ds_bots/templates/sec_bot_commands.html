@@ -17,6 +17,10 @@
   rel="stylesheet"
   href="{{ url_for('static', filename='CSS/commands.css') }}"
 />
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='CSS/commands_queries.css') }}"
+/>
 {% endblock link_additional_files %}
 
 {% block content %}
@@ -25,9 +29,31 @@
   {% include 'main_header.html' %}
 {% endwith %}
 
-<div class="container-custom">
-  {% for command in commands %}
-    <h2>{{ command }}</h2>
-  {% endfor %}
+
+<div class="container-custom commands-container-whole mrg-bottom-medium mrg-top-small">
+
+  <div class="command-types-container">
+    {% for category in categories %}
+      {% for category_name in category %}
+        {% if current_category == category_name %}
+          <a href="/secondary_bot/commands/{{ category_name }}" class="btn-custom btn--full-dark-reversed current-category">{{ category_name }}</a>
+        {% else %}
+          <a href="/secondary_bot/commands/{{ category_name }}" class="btn-custom btn--full-dark-reversed">{{ category_name }}</a>
+        {% endif %}
+      {% endfor %}
+    {% endfor %}
+  </div>
+
+  <div class="commands-container">
+    {% for command in commands %}
+      <div class="commmand-element">
+        <ion-icon size="small" name="ellipse-outline" class="command-icon"></ion-icon>
+        <span>{{ command.command }}</span>
+      </div>
+    {% endfor %}
+  </div>
+
 </div>
+{% include 'footer.html' %}
+
 {% endblock content %}
