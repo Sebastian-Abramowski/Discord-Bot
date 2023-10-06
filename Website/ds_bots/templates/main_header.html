@@ -1,0 +1,31 @@
+<header class="header sticky-top">
+    <nav class="navbar navbar-expand-md navbar-dark">
+      <a class="navbar-brand" href="#">
+        <div class="center-with-flexbox flex-small-gap">
+            {% if logo_color == 'black' %}
+                <img class="logo" alt="Logo" src="{{ url_for('static', filename='img/icon.png') }}" />
+            {% else %}
+                <img class="logo" alt="Logo" src="{{ url_for('static', filename='img/icon2.png') }}" />
+            {% endif %}
+            <span class="title">{{ title }}</span>
+        </div>
+      </a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <div class="navbar-nav ml-auto">
+          <a class="nav-link" href="/music_bot">DonkeyMusicBot</a>
+          <a class="nav-link" href="/secondary_bot">DonkeySecondaryBot</a>
+        </div>
+      </div>
+    </nav>
+</header>

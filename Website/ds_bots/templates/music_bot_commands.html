@@ -1,0 +1,33 @@
+{% extends "basic_template.html" %}
+
+{% block meta_description %}
+<meta name="description" content="Commands of DonkeyMusicBot" />
+{% endblock meta_description %}
+
+{% block icons %}
+<link rel="icon" href="{{ url_for('static', filename='img/icon32.png') }}" />
+<link
+  rel="apple-touch-icon"
+  href="{{ url_for('static', filename='img/icon180.png') }}"
+/>
+{% endblock icons %}
+
+{% block link_additional_files %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='CSS/commands.css') }}"
+/>
+{% endblock link_additional_files %}
+
+{% block content %}
+
+{% with logo_color='black' %}
+  {% include 'main_header.html'%}
+{% endwith %}
+
+<div class="container-custom">
+  {% for command in commands %}
+    <h2>{{ command }}</h2>
+  {% endfor %}
+</div>
+{% endblock content %}

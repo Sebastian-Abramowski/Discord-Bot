@@ -33,6 +33,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='CSS/scroll_bar.css') }}" />
 
     {% block link_additional_files %} {% endblock %}
+
+    <title>{{ title }}</title>
   </head>
   <body>
     {% block content %} {% endblock %}
