@@ -1,0 +1,59 @@
+/* rem and em do not depend on html font-size in media queries */
+/* 1rem = 1em = 16px */
+/* It's safer to use em in media queries */
+
+/*
+BREAKPOINTS:
+- BELOW 784px
+- BELOW 512px
+- BELOW 336px
+
+
+(many phones are between 350 - 450px)
+The smallest width of the phone you should consider when designing
+a webiste is typically 320px
+
+*/
+
+@media (max-width: 49em) {
+  .commands-container-whole {
+    gap: 6.4rem;
+  }
+  html {
+    font-size: 43.75%;
+  }
+  .commands-container {
+    font-size: 2.8rem;
+  }
+  .commands-container-whole {
+    min-height: 90vh;
+  }
+}
+
+@media (max-width: 32rem) {
+  .commands-container-whole {
+    flex-direction: column;
+  }
+
+  .command-icon {
+    display: none;
+  }
+
+  .commmand-element {
+    justify-content: center;
+  }
+
+  .btn-custom {
+    width: 80%;
+  }
+
+  .command-types-container {
+    align-items: center;
+  }
+}
+
+@media (max-width: 21rem) {
+  .title {
+    font-size: 1.4rem;
+  }
+}
