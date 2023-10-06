@@ -13,11 +13,11 @@
 {% endblock icons %}
 
 {% block logo %}
-<img class="logo" alt="Logo" src="{{ url_for('static', filename='img/icon.png') }}" />
+<img class="logo" alt="Bot logo" src="{{ url_for('static', filename='img/icon.png') }}" />
 {% endblock logo %}
 
 {% block bot_image %}
-<img class="bot-image" alt="Bot image" src="{{ url_for('static', filename='img/icon.png') }}" />
+<img class="bot-image" alt="Bot logo" src="{{ url_for('static', filename='img/icon.png') }}" />
 {% endblock bot_image %}
 
 {% block first_section_content %}
@@ -31,7 +31,7 @@
     </p>
     <img
         class="bot-image-section center-item-in-grid grid-element-to-right"
-        alt="Bot image"
+        alt="Example of starting playing music"
         src="{{ url_for('static', filename='img/searching-show.png') }}"
     />
 </div>
@@ -44,7 +44,7 @@
 <div class="grid grid--2-cols">
     <img
         class="bot-image-section image-on-left"
-        alt="Bot image"
+        alt="Different commands of the bot"
         src="{{ url_for('static', filename='img/commands-show.png') }}"
     />
     <div class="section-info-with-link flex-columns">
@@ -65,7 +65,7 @@
 {% block bot_online_image %}
 <img
     class="bot-image-section center-item-in-grid grid-element-to-right"
-    alt="Bot image"
+    alt="Bot being online"
     src="{{ url_for('static', filename='img/bot-online2.png') }}"
 />
 {% endblock bot_online_image %}
