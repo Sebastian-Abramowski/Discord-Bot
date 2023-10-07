@@ -92,7 +92,12 @@ Similar page is done for the second bot. It uses SQLite database and it was made
 
 Similar page is done for the second bot <br /> <br />
 
-<img src="Website/ds_bots/img/Imgs-for-readme/bot_page1.png" alt="donkey image" width="30%">
-<img src="Website/ds_bots/img/Imgs-for-readme/bot_page2.png" alt="donkey image" width="30%">
-<img src="Website/ds_bots/img/Imgs-for-readme/bot_page3.png" alt="donkey image" width="30%">
-<img src="Website/ds_bots/img/Imgs-for-readme/bot_page4.png" alt="donkey image" width="30%">
+<div>
+    <img src="Website/ds_bots/img/Imgs-for-readme/bot_page1.png" alt="donkey image" width="30%">
+    <img src="Website/ds_bots/img/Imgs-for-readme/bot_page2.png" alt="donkey image" width="30%">
+</div>
+
+<div>
+    <img src="Website/ds_bots/img/Imgs-for-readme/bot_page3.png" alt="donkey image" width="30%">
+    <img src="Website/ds_bots/img/Imgs-for-readme/bot_page4.png" alt="donkey image" width="30%">
+</div>
