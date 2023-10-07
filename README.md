@@ -79,13 +79,12 @@ For DonkeySecondaryBot(inside 'secondary_bot' folder)
 
 ### Home page
 
-<img src="Website/ds_bots/img/Imgs-for-readme/home_page.png" alt="donkey image" width="150%">
+<img src="Website/ds_bots/img/Imgs-for-readme/home_page.png" alt="donkey image">
 
 ### Bot page
 
 Similar page is done for the second bot
-
-##
+&nbsp;&nbsp;
 
 <img src="Website/ds_bots/img/Imgs-for-readme/bot_page1.png" alt="donkey image" width="55%">
 <img src="Website/ds_bots/img/Imgs-for-readme/bot_page2.png" alt="donkey image" width="55%">
@@ -95,8 +94,7 @@ Similar page is done for the second bot
 ### Commands page
 
 Similar page is done for the second bot. It uses SQLite database and it was made with SQLAlchemy
+&nbsp;
 
-##
-
-<img src="Website/ds_bots/img/Imgs-for-readme/commands1.png" alt="donkey image" width="110%">
-<img src="Website/ds_bots/img/Imgs-for-readme/commands2.png" alt="donkey image" width="110%">
+<img src="Website/ds_bots/img/Imgs-for-readme/commands1.png" alt="donkey image">
+<img src="Website/ds_bots/img/Imgs-for-readme/commands2.png" alt="donkey image">
