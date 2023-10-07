@@ -79,7 +79,7 @@ For DonkeySecondaryBot(inside 'secondary_bot' folder)
 
 ### Home page
 
-<img src="Website/ds_bots/img/Imgs-for-readme/home_page.png" alt="donkey image">
+<img src="Website/ds_bots/img/Imgs-for-readme/home_page.png" alt="donkey image" width="150%">
 
 ### Bot page
 
@@ -87,10 +87,10 @@ Similar page is done for the second bot
 
 ##
 
-<img src="Website/ds_bots/img/Imgs-for-readme/bot_page1.png" alt="donkey image" width="35%">
-<img src="Website/ds_bots/img/Imgs-for-readme/bot_page2.png" alt="donkey image" width="35%">
-<img src="Website/ds_bots/img/Imgs-for-readme/bot_page3.png" alt="donkey image" width="35%">
-<img src="Website/ds_bots/img/Imgs-for-readme/bot_page4.png" alt="donkey image" width="35%">
+<img src="Website/ds_bots/img/Imgs-for-readme/bot_page1.png" alt="donkey image" width="55%">
+<img src="Website/ds_bots/img/Imgs-for-readme/bot_page2.png" alt="donkey image" width="55%">
+<img src="Website/ds_bots/img/Imgs-for-readme/bot_page3.png" alt="donkey image" width="55%">
+<img src="Website/ds_bots/img/Imgs-for-readme/bot_page4.png" alt="donkey image" width="55%">
 
 ### Commands page
 
@@ -98,5 +98,5 @@ Similar page is done for the second bot. It uses SQLite database and it was made
 
 ##
 
-<img src="Website/ds_bots/img/Imgs-for-readme/commands1.png" alt="donkey image" width="65%">
-<img src="Website/ds_bots/img/Imgs-for-readme/commands2.png" alt="donkey image" width="65%">
+<img src="Website/ds_bots/img/Imgs-for-readme/commands1.png" alt="donkey image" width="110%">
+<img src="Website/ds_bots/img/Imgs-for-readme/commands2.png" alt="donkey image" width="110%">
