@@ -74,3 +74,23 @@ For DonkeySecondaryBot(inside 'secondary_bot' folder)
 - `MARVEL_API_PUBLIC_KEY`
 - `MARVEL_API_PRIVATE_KEY`
 - `COUNTRYAPI_API_KEY`
+
+## Website
+
+### Home page
+
+<img src="Website/ds_bots/img/Imgs-for-readme/home_page.png" alt="donkey image" width="45%">
+
+### Bot page
+
+Similar page is done for the second bot
+<img src="Website/ds_bots/img/Imgs-for-readme/bot_page1.png" alt="donkey image" width="25%">
+<img src="Website/ds_bots/img/Imgs-for-readme/bot_page2.png" alt="donkey image" width="25%">
+<img src="Website/ds_bots/img/Imgs-for-readme/bot_page3.png" alt="donkey image" width="25%">
+<img src="Website/ds_bots/img/Imgs-for-readme/bot_page4.png" alt="donkey image" width="25%">
+
+### Commands page
+
+Similar page is done for the second bot. It uses SQLite database and it was made with SQLAlchemy
+<img src="Website/ds_bots/img/Imgs-for-readme/commands1.png" alt="donkey image" width="50%">
+<img src="Website/ds_bots/img/Imgs-for-readme/commands2.png" alt="donkey image" width="50%">
