@@ -4,5 +4,4 @@ if __name__ == "__main__":
     app.run(debug=True)
 
 
-# TODO: dodawanie komendy za hasłem admina
-# TODO: deploy
+# TODO: / albo gify

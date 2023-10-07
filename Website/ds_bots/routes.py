@@ -40,17 +40,20 @@ def music_bot():
 @app.route("/music_bot/commands")
 def music_bot_commands():
     return render_template("music_bot_commands.html", title="DonkeyMusicBot commands",
-                           commands=Command.query.filter_by(
-                               bot_name="DonkeyMusicBot").order_by(Command.category.desc()).all(),
-                           categories=Command.query.filter_by(bot_name="DonkeyMusicBot").with_entities(Command.category).distinct())
+                           commands=Command.query.filter_by(bot_name="DonkeyMusicBot").order_by(
+                               Command.category.desc()).all(),
+                           categories=Command.query.filter_by(bot_name="DonkeyMusicBot").with_entities(
+                               Command.category).distinct().all())
 
 
 @app.route("/music_bot/commands/<category_name>")
-def music_bot_commands_by_category(category_name):
+def music_bot_commands_by_category(category_name: str):
     return render_template("music_bot_commands.html", title="DonkeyMusicBot commands",
-                           commands=Command.query.filter_by(
-                               bot_name="DonkeyMusicBot", category=category_name).order_by(Command.category.desc()).all(),
-                           categories=Command.query.filter_by(bot_name="DonkeyMusicBot").with_entities(Command.category).distinct(),
+                           commands=Command.query.filter_by(bot_name="DonkeyMusicBot",
+                                                            category=category_name).order_by(
+                                                                Command.category.desc()).all(),
+                           categories=Command.query.filter_by(bot_name="DonkeyMusicBot").with_entities(
+                               Command.category).distinct().all(),
                            current_category=category_name)
 
 
@@ -62,15 +65,20 @@ def secondary_bot():
 @app.route("/secondary_bot/commands")
 def secondary_bot_commands():
     return render_template("sec_bot_commands.html", title="DonkeySecondaryBot commands",
-                           commands=Command.query.filter_by(
-                               bot_name="DonkeySecondaryBot").order_by(Command.category).all(),
-                           categories=Command.query.filter_by(bot_name="DonkeySecondaryBot").with_entities(Command.category).distinct().all())
+                           commands=Command.query.filter_by(bot_name="DonkeySecondaryBot").order_by(
+                               Command.category).all(),
+                           categories=Command.query.filter_by(bot_name="DonkeySecondaryBot"
+                                                              ).with_entities(
+                                                                  Command.category).distinct().all())
 
 
 @app.route("/secondary_bot/commands/<category_name>")
-def secondary_bot_commands_by_category(category_name):
+def secondary_bot_commands_by_category(category_name: str):
     return render_template("sec_bot_commands.html", title="DonkeySecondaryBot commands",
-                           commands=Command.query.filter_by(
-                               bot_name="DonkeySecondaryBot", category=category_name).order_by(Command.category.desc()).all(),
-                           categories=Command.query.filter_by(bot_name="DonkeySecondaryBot").with_entities(Command.category).distinct(),
+                           commands=Command.query.filter_by(bot_name="DonkeySecondaryBot",
+                                                            category=category_name).order_by(
+                                                                Command.category.desc()).all(),
+                           categories=Command.query.filter_by(bot_name="DonkeySecondaryBot"
+                                                              ).with_entities(
+                                                                  Command.category).distinct().all(),
                            current_category=category_name)

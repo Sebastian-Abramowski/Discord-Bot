@@ -16,10 +16,10 @@ class Command(db.Model):
         UniqueConstraint('bot_name', 'command', name='unique_bot_command'),
     )
 
-    def __init__(self, bot_name, command, category):
+    def __init__(self, bot_name: str, command: str, category: str):
         self.bot_name = bot_name
         self.command = command
         self.category = category
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Command: {self.command} of {self.bot_name} bot [Category: {self.category}]"
