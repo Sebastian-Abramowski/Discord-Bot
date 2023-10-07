@@ -96,9 +96,3 @@ Similar page is done for the second bot <br /> <br />
     <img src="Website/ds_bots/img/Imgs-for-readme/bot_page1.png" alt="donkey image" width="48%">
     <img src="Website/ds_bots/img/Imgs-for-readme/bot_page2.png" alt="donkey image" width="48%">
 </div>
-
-<div>
-    <img src="Website/ds_bots/img/Imgs-for-readme/bot_page3.png" alt="donkey image" width="48%">
-    <img src="Website/ds_bots/img/Imgs-for-readme/bot_page4.png" alt="donkey image" width="48%">
-</div>
-<img src="Website/ds_bots/img/Imgs-for-readme/bot_page5.png" alt="donkey image" width="48%">
