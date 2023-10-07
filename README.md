@@ -83,7 +83,7 @@ For DonkeySecondaryBot(inside 'secondary_bot' folder)
 
 ### Commands page
 
-Similar page is done for the second bot. It uses SQLite database and it was made with SQLAlchemy <br />
+Similar page is done for the second bot. It uses SQLite database and it was made with SQLAlchemy <br /> <br />
 
 <img src="Website/ds_bots/img/Imgs-for-readme/commands1.png" alt="donkey image">
 <img src="Website/ds_bots/img/Imgs-for-readme/commands2.png" alt="donkey image">
@@ -92,7 +92,7 @@ Similar page is done for the second bot. It uses SQLite database and it was made
 
 Similar page is done for the second bot <br /> <br />
 
-<img src="Website/ds_bots/img/Imgs-for-readme/bot_page1.png" alt="donkey image" width="45%">
-<img src="Website/ds_bots/img/Imgs-for-readme/bot_page2.png" alt="donkey image" width="45%">
-<img src="Website/ds_bots/img/Imgs-for-readme/bot_page3.png" alt="donkey image" width="45%">
-<img src="Website/ds_bots/img/Imgs-for-readme/bot_page4.png" alt="donkey image" width="45%">
+<img src="Website/ds_bots/img/Imgs-for-readme/bot_page1.png" alt="donkey image" width="40%">
+<img src="Website/ds_bots/img/Imgs-for-readme/bot_page2.png" alt="donkey image" width="40%">
+<img src="Website/ds_bots/img/Imgs-for-readme/bot_page3.png" alt="donkey image" width="40%">
+<img src="Website/ds_bots/img/Imgs-for-readme/bot_page4.png" alt="donkey image" width="40%">
